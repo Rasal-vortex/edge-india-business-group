@@ -1,75 +1,152 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
-import Image from 'next/image';
-import { ArrowUpRight, Search, Users, Filter, X } from 'lucide-react';
-import { Member, MEMBERS_DATA } from './data';
+import React, { useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
+import { ArrowLeft, ArrowUpRight, Search, Users, X } from 'lucide-react';
+import { useReducedMotion } from 'motion/react';
+import type { Member } from './data';
+import MemberCard from '@/components/members/MemberCard';
+import { createClient } from '@/lib/supabase/client';
+import { toPublicMember, type MemberRow } from '@/lib/members';
+import LiquidLoader from '@/components/ui/LiquidLoader';
+
+type MemberFilter = 'all' | string;
 
 interface MembersProps {
+  members?: Member[];
+  directory?: boolean;
   onSelectMember: (member: Member) => void;
-  onNominateMember: () => void;
 }
 
-export default function Members({ onSelectMember, onNominateMember }: MembersProps) {
-  const [activeFilter, setActiveFilter] = useState<'all' | 'advisory' | 'founding' | 'regional'>('all');
+export default function Members({ members: initialMembers, directory = false, onSelectMember }: MembersProps) {
+  const [members, setMembers] = useState<Member[]>(initialMembers ?? []);
+  const [loading, setLoading] = useState(initialMembers === undefined);
+  const [loadError, setLoadError] = useState('');
+  const [activeFilter, setActiveFilter] = useState<MemberFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const reduceMotion = useReducedMotion();
+  const normalizedQuery = searchQuery.trim().toLocaleLowerCase();
 
-  const filterTabs = [
-    { id: 'all', label: 'All Leaders' },
-    { id: 'advisory', label: 'Advisory Board' },
-    { id: 'founding', label: 'Founding Members' },
-    { id: 'regional', label: 'Regional Chapters' },
-  ] as const;
+  useEffect(() => {
+    if (initialMembers !== undefined) {
+      setMembers(initialMembers);
+      setLoading(false);
+      return;
+    }
 
-  const filteredMembers = useMemo(() => {
-    return MEMBERS_DATA.filter((member) => {
-      const matchesCategory =
-        activeFilter === 'all' || member.categories.includes(activeFilter);
-      const matchesSearch =
-        member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        member.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        member.sector.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        member.description.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesCategory && matchesSearch;
-    });
-  }, [activeFilter, searchQuery]);
+    let cancelled = false;
+    const loadMembers = async () => {
+      setLoading(true);
+      setLoadError('');
+      try {
+        const supabase = createClient();
+        const { data, error } = await supabase
+          .from('members')
+          .select('*')
+          .eq('is_active', true)
+          .order('display_order', { ascending: true })
+          .order('name', { ascending: true });
+        if (error) throw error;
+        if (!cancelled) setMembers((data as MemberRow[]).map(toPublicMember));
+      } catch {
+        if (!cancelled) setLoadError('We could not load the member directory right now. Please try again later.');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    void loadMembers();
+    return () => { cancelled = true; };
+  }, [initialMembers]);
+
+  const categoryFilters = useMemo(() => Array.from(new Set(members.flatMap((member) => member.categories)))
+    .filter(Boolean)
+    .map((category) => ({ id: category, label: category })), [members]);
+
+  const filteredMembers = useMemo(() => members.filter((member) => {
+    const matchesCategory = activeFilter === 'all' || member.categories.includes(activeFilter);
+    const matchesSearch = !normalizedQuery ||
+      member.name.toLocaleLowerCase().includes(normalizedQuery) ||
+      (member.company ?? '').toLocaleLowerCase().includes(normalizedQuery);
+    return matchesCategory && matchesSearch;
+  }), [activeFilter, members, normalizedQuery]);
+
+  const hasActiveSearchOrFilter = normalizedQuery.length > 0 || activeFilter !== 'all';
+  const displayedMembers = directory || hasActiveSearchOrFilter
+    ? filteredMembers
+    : filteredMembers.slice(0, 8);
+  const hasMoreMembers = filteredMembers.length > 8;
 
   return (
-    <section className="w-full bg-white py-16 lg:py-24 border-b border-slate-200" id="members">
-      <div className="max-w-[1280px] mx-auto px-4 md:px-8 lg:px-12">
-        {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
-          <div className="flex flex-col gap-2 max-w-2xl">
-            <div className="inline-flex items-center gap-2">
-              <span className="w-2.5 h-1 bg-[#bb0013] rounded-full" />
-              <span className="text-[11px] font-extrabold text-[#002069] tracking-widest uppercase">
-                OUR COMMUNITY
+    <section id="members" className="w-full border-b border-slate-200 bg-white py-16 lg:py-24">
+      <div className="mx-auto max-w-[1280px] px-4 md:px-8 lg:px-12">
+        {directory ? (
+          <Link
+            href="/#members"
+            className="mb-8 inline-flex min-h-10 items-center gap-2 rounded border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-[#12358f] shadow-sm transition-colors hover:border-[#12358f] hover:bg-[#f8f9ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#12358f]"
+          >
+            <ArrowLeft aria-hidden="true" className="h-4 w-4" />
+            Back to main Members section
+          </Link>
+        ) : null}
+
+        <div className="mb-8 flex flex-col items-center gap-6 text-center lg:mb-10">
+          <div className="flex max-w-3xl flex-col items-center gap-2">
+            <div className="inline-flex items-center justify-center gap-2">
+              <span aria-hidden="true" className="h-1 w-2.5 rounded-full bg-[#bb0013]" />
+              <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#002069]">
+                Our Community
               </span>
             </div>
-
-            <h2 className="text-3xl sm:text-4xl lg:text-[40px] font-extrabold text-[#0b1c30] tracking-tight">
+            <h2 className="text-3xl font-extrabold tracking-tight text-[#0b1c30] sm:text-4xl lg:text-[40px]">
               Meet the people behind Edge India Business Group
             </h2>
-
-            <p className="text-base text-slate-600">
-              Distinguished leaders, founders, and industry champions shaping India&apos;s economic frontier.
+            <p className="max-w-2xl text-base leading-relaxed text-slate-600">
+              Meet entrepreneurs, professionals, and business leaders in the Manjeri community.
             </p>
           </div>
 
-          {/* Filter System & Search */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-            {/* Filter Chips */}
-            <div className="flex flex-wrap items-center gap-1.5 p-1 bg-slate-100 rounded-lg border border-slate-200">
-              {filterTabs.map((tab) => {
+
+        </div>
+
+        {directory ? <div className="mb-6 flex flex-col items-center gap-4">
+          <div className="relative w-full max-w-xl">
+            <label htmlFor="member-search" className="sr-only">Search members or companies</label>
+            <Search aria-hidden="true" className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <input
+              id="member-search"
+              type="text"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              placeholder="Search members or companies..."
+              className="min-h-12 w-full rounded-lg border border-slate-200 bg-white py-3 pl-11 pr-11 text-sm text-slate-800 shadow-sm outline-none transition placeholder:text-slate-400 focus:border-[#12358f] focus:ring-2 focus:ring-[#12358f]/15"
+            />
+            {searchQuery ? (
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                aria-label="Clear search"
+                className="absolute right-3 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-100 hover:text-[#002069] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#12358f]"
+              >
+                <X aria-hidden="true" className="h-4 w-4" />
+              </button>
+            ) : null}
+          </div>
+
+          <div className="-mx-1 w-full overflow-x-auto px-1 pb-1" role="group" aria-label="Filter members by category">
+            <div className="mx-auto flex w-max min-w-full items-center justify-center gap-2">
+              {[{ id: 'all', label: 'All Members' }, ...categoryFilters].map((tab) => {
                 const isActive = activeFilter === tab.id;
                 return (
                   <button
                     key={tab.id}
+                    type="button"
+                    aria-pressed={isActive}
                     onClick={() => setActiveFilter(tab.id)}
-                    className={`px-3 py-1.5 rounded text-xs font-bold transition-all ${
+                    className={`min-h-10 shrink-0 rounded-full border px-4 py-2 text-xs font-bold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#12358f] ${
                       isActive
-                        ? 'bg-[#002069] text-white shadow-sm'
-                        : 'text-slate-600 hover:text-[#002069]'
+                        ? 'border-[#002069] bg-[#002069] text-white shadow-sm'
+                        : 'border-slate-200 bg-white text-slate-600 hover:border-[#12358f]/40 hover:text-[#002069]'
                     }`}
                   >
                     {tab.label}
@@ -77,118 +154,75 @@ export default function Members({ onSelectMember, onNominateMember }: MembersPro
                 );
               })}
             </div>
-
-            {/* Quick Search Input */}
-            <div className="relative w-full sm:w-48">
-              <Search className="absolute left-2.5 top-2.5 w-3.5 h-3.5 text-slate-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search leaders..."
-                className="w-full pl-8 pr-7 py-1.5 text-xs bg-white border border-slate-200 rounded-lg text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-1 focus:ring-[#12358f]"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-2 top-2 text-slate-400 hover:text-slate-600"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              )}
-            </div>
           </div>
-        </div>
+        </div> : null}
 
-        {/* 4-Card Member Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch mt-4">
-          {filteredMembers.map((member) => (
-            <div
-              key={member.id}
-              onClick={() => onSelectMember(member)}
-              className="group relative bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 p-4 flex flex-col justify-between overflow-hidden border border-slate-200 cursor-pointer"
-            >
-              {/* Top Accent Line */}
-              <div className="absolute top-0 left-0 right-0 h-1 bg-[#12358f] group-hover:bg-[#bb0013] transition-colors" />
-
-              <div>
-                <div className="w-full h-64 rounded-lg overflow-hidden bg-slate-100 mb-4 relative">
-                  <Image
-                    fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-500"
-                    alt={member.name}
-                    src={member.image}
-                    referrerPolicy="no-referrer"
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                  />
-                  <span className="absolute top-2 right-2 px-2 py-0.5 bg-[#002069]/90 text-white text-[10px] font-extrabold uppercase rounded tracking-wider shadow-sm z-10">
-                    {member.badge}
-                  </span>
-                </div>
-
-                <h3 className="text-xl font-bold text-[#002069] group-hover:text-[#bb0013] transition-colors">
-                  {member.name}
-                </h3>
-                <p className="text-sm text-[#bb0013] font-semibold mt-0.5">
-                  {member.role}
-                </p>
-                <p className="text-xs text-slate-600 mt-2 leading-relaxed line-clamp-3">
-                  {member.description}
-                </p>
-              </div>
-
-              <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between">
-                <span className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
-                  {member.sector}
-                </span>
-                <span className="p-1 rounded text-[#002069] group-hover:text-[#bb0013] group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all">
-                  <ArrowUpRight className="w-4 h-4" />
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {filteredMembers.length === 0 && (
-          <div className="py-16 text-center bg-slate-50 rounded-xl border border-dashed border-slate-300">
-            <Users className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-            <p className="text-sm font-semibold text-slate-700">No leaders match your search criteria</p>
-            <p className="text-xs text-slate-500 mt-1">Try resetting the category filter or clearing the search text.</p>
+        {loading ? (
+          <div className="flex min-h-52 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 py-12 text-center">
+            <LiquidLoader />
+          </div>
+        ) : loadError ? (
+          <div className="rounded-xl border border-rose-200 bg-rose-50 py-12 text-center" role="alert">
+            <p className="text-sm font-semibold text-rose-800">{loadError}</p>
+          </div>
+        ) : members.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 py-16 text-center">
+            <Users aria-hidden="true" className="mx-auto mb-2 h-8 w-8 text-slate-400" />
+            <p className="text-sm font-semibold text-slate-700">Member profiles are being added.</p>
+            <p className="mt-1 text-sm text-slate-500">Contact the chapter to ask about membership or a guest invitation.</p>
+          </div>
+        ) : filteredMembers.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 py-16 text-center">
+            <Users aria-hidden="true" className="mx-auto mb-2 h-8 w-8 text-slate-400" />
+            <p className="text-base font-bold text-slate-800">No members found</p>
+            <p className="mt-1 text-sm text-slate-500">Try another name or company.</p>
             <button
+              type="button"
               onClick={() => {
-                setActiveFilter('all');
                 setSearchQuery('');
+                setActiveFilter('all');
               }}
-              className="mt-3 text-xs text-[#12358f] font-bold hover:underline"
+              className="mt-4 rounded px-3 py-2 text-sm font-bold text-[#12358f] underline-offset-4 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#12358f]"
             >
-              Reset Filters
+              Clear Search
             </button>
           </div>
-        )}
-
-        {/* Member Directory Invitation Strip */}
-        <div className="mt-12 p-4 sm:p-6 bg-[#f8f9ff] rounded-xl border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3 text-center sm:text-left">
-            <div className="w-10 h-10 rounded-full bg-[#12358f]/10 text-[#12358f] flex items-center justify-center shrink-0">
-              <Users className="w-5 h-5" />
-            </div>
-            <div>
-              <h4 className="text-sm font-bold text-[#002069]">
-                Are you an industry leader or institutional founder?
-              </h4>
-              <p className="text-xs text-slate-600">
-                Nominations for the 2026–2027 Executive Fellowship cohort are currently undergoing vetting by the Membership Committee.
+        ) : (
+          <>
+            <div className="mb-4 flex justify-center gap-4 text-center text-xs text-slate-500">
+              <p aria-live="polite">
+                {hasActiveSearchOrFilter || directory
+                  ? `${filteredMembers.length} ${filteredMembers.length === 1 ? 'member' : 'members'}`
+                  : `Showing ${displayedMembers.length} of ${filteredMembers.length} members`}
               </p>
             </div>
-          </div>
 
-          <button
-            onClick={onNominateMember}
-            className="whitespace-nowrap px-5 py-2.5 bg-white border border-[#12358f] text-[#12358f] text-xs font-bold rounded hover:bg-[#12358f] hover:text-white transition-all shadow-sm"
-          >
-            Submit Corporate Nomination
-          </button>
-        </div>
+            <div className="grid grid-cols-1 items-stretch gap-5 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
+              {displayedMembers.map((member, index) => (
+                <MemberCard
+                  key={member.id}
+                  member={member}
+                  index={index}
+                  reduceMotion={reduceMotion}
+                  onSelect={onSelectMember}
+                />
+              ))}
+            </div>
+
+            {hasMoreMembers && !hasActiveSearchOrFilter && !directory ? (
+              <div className="mt-8 flex justify-center">
+                <Link
+                  href="/members"
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded border border-[#12358f] bg-white px-6 py-3 text-sm font-bold text-[#12358f] shadow-sm transition-colors hover:bg-[#12358f] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bb0013]"
+                >
+                  View All Members
+                  <ArrowUpRight aria-hidden="true" className="h-4 w-4" />
+                </Link>
+              </div>
+            ) : null}
+          </>
+        )}
+
       </div>
     </section>
   );

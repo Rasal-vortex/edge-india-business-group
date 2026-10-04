@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Image from 'next/image';
-import { X, Calendar, MapPin, Users, Award, Download, ArrowRight } from 'lucide-react';
+import { X, MapPin, Users, Award, ArrowRight } from 'lucide-react';
 import { GalleryItem } from './data';
 
 interface LightboxModalProps {
@@ -36,7 +36,7 @@ export default function LightboxModal({ item, onClose, onInquire }: LightboxModa
         <div className="relative w-full h-[320px] sm:h-[400px] md:h-[460px] bg-slate-900 shrink-0 overflow-hidden">
           <Image
             src={item.image}
-            alt={item.title}
+            alt={`Illustrative image for ${item.title}`}
             fill
             className="object-cover"
             referrerPolicy="no-referrer"
@@ -60,34 +60,27 @@ export default function LightboxModal({ item, onClose, onInquire }: LightboxModa
 
         {/* Modal Info Bar */}
         <div className="p-5 sm:p-6 bg-white overflow-y-auto space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs">
-            <div className="flex items-center gap-2 text-slate-700">
-              <Calendar className="w-4 h-4 text-[#12358f] shrink-0" />
-              <div>
-                <p className="font-semibold text-slate-900">Convening Date</p>
-                <p className="text-slate-500">{item.date}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 text-slate-700">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs">
+            {item.location ? <div className="flex items-center gap-2 text-slate-700">
               <MapPin className="w-4 h-4 text-[#bb0013] shrink-0" />
               <div>
-                <p className="font-semibold text-slate-900">Institutional Venue</p>
+                <p className="font-semibold text-slate-900">Location / format</p>
                 <p className="text-slate-500">{item.location}</p>
               </div>
-            </div>
-            <div className="flex items-center gap-2 text-slate-700">
+            </div> : null}
+            {item.participants ? <div className="flex items-center gap-2 text-slate-700">
               <Users className="w-4 h-4 text-[#12358f] shrink-0" />
               <div>
-                <p className="font-semibold text-slate-900">Participation Scale</p>
+                <p className="font-semibold text-slate-900">Community</p>
                 <p className="text-slate-500 truncate">{item.participants}</p>
               </div>
-            </div>
+            </div> : null}
           </div>
 
           <div>
             <h4 className="text-xs font-bold uppercase tracking-wider text-[#002069] mb-2 flex items-center gap-1.5">
               <Award className="w-4 h-4 text-[#bb0013]" />
-              Strategic Resolutions & Outcomes
+              About this activity
             </h4>
             <div className="space-y-1.5">
               {item.keyTakeaways.map((point, index) => (
@@ -101,7 +94,7 @@ export default function LightboxModal({ item, onClose, onInquire }: LightboxModa
 
           <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
             <span className="text-xs text-slate-500">
-              High-resolution institutional documentation record.
+              Illustrative image; this is not a photograph of a specific chapter event.
             </span>
             <div className="flex gap-2">
               <button
@@ -111,7 +104,7 @@ export default function LightboxModal({ item, onClose, onInquire }: LightboxModa
                 }}
                 className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#12358f] hover:bg-[#002069] text-white text-xs font-bold rounded transition-colors"
               >
-                Inquire on Next Session
+                Contact the chapter
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>

@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import Image from 'next/image';
-import { Eye, Calendar, Sparkles } from 'lucide-react';
+import { Eye } from 'lucide-react';
 import { GalleryItem, GALLERY_DATA } from './data';
 
 interface GalleryProps {
@@ -33,16 +33,16 @@ export default function Gallery({ onSelectItem }: GalleryProps) {
             <div className="inline-flex items-center gap-2">
               <span className="w-2.5 h-1 bg-[#bb0013] rounded-full" />
               <span className="text-[11px] font-extrabold text-[#002069] tracking-widest uppercase">
-                MOMENTS
+              ACTIVITIES
               </span>
             </div>
 
             <h2 className="text-3xl sm:text-4xl lg:text-[40px] font-extrabold text-[#0b1c30] tracking-tight">
-              Business, people, and moments that bring us together.
+              Ways our community connects, learns, and grows.
             </h2>
 
             <p className="text-base text-slate-600">
-              A curated chronicle of closed-door executive roundtables, national summits, and collaborative networking evenings.
+              Explore the meeting formats, learning sessions, and local business activities described by the Manjeri chapter.
             </p>
           </div>
 
@@ -70,12 +70,12 @@ export default function Gallery({ onSelectItem }: GalleryProps) {
           </div>
         </div>
 
-        {/* 8-Photo Asymmetric Grid */}
+        {/* Illustrative imagery for documented activity formats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 auto-rows-[220px]">
           {filteredItems.map((item) => {
-            const isLarge = item.id === 'national-growth-keynote';
-            const isTall = item.id === 'bilateral-trade-agreement';
-            const isWide = item.id === 'western-regional-delegation';
+            const isLarge = item.id === 'ai-business-automation';
+            const isTall = item.id === 'business-acceleration';
+            const isWide = item.id === 'local-launch-support';
 
             const spanClass = 
               activeTab === 'all'
@@ -97,9 +97,8 @@ export default function Gallery({ onSelectItem }: GalleryProps) {
                 <Image
                   fill
                   className="object-cover group-hover:scale-105 transition-transform duration-700"
-                  alt={item.title}
+                  alt={`Illustrative image for ${item.title}`}
                   src={item.image}
-                  referrerPolicy="no-referrer"
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                 />
 

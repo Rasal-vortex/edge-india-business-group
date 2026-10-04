@@ -1,95 +1,48 @@
 'use client';
 
-import React from 'react';
-import { ArrowRight, Download, FileText } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
+import LanyardCtaVisual from '@/components/LanyardCtaVisual';
 
-interface CTAProps {
-  onOpenConnect: () => void;
-  onOpenProspectus: () => void;
-}
+export default function CTA() {
+  const whatsappMessage = encodeURIComponent('Hi, I’m interested in joining the EDGE India community. Could you share the membership details?');
+  const whatsappUrl = `https://wa.me/919995430724?text=${whatsappMessage}`;
 
-export default function CTA({ onOpenConnect, onOpenProspectus }: CTAProps) {
   return (
-    <section className="w-full bg-[#12358f] text-white relative overflow-hidden py-16 lg:py-24 border-t-2 border-[#bb0013]">
-      {/* Abstract Geometric Monogram Grid Watermark */}
-      <div className="absolute inset-0 opacity-10 pointer-events-none flex items-center justify-center">
-        <svg
-          className="w-[800px] h-[800px] text-white"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 400 400"
-        >
-          <path d="M50 100 H350 M50 200 H250 M50 300 H350" strokeWidth="6" />
-          <path d="M50 50 V350" strokeWidth="8" />
-          <path d="M250 50 L350 200 L250 350" strokeDasharray="10 10" strokeWidth="4" />
-        </svg>
-      </div>
-
-      <div className="relative z-10 max-w-[1280px] mx-auto px-4 md:px-8 lg:px-12 text-center flex flex-col items-center">
-        {/* Eyebrow Tag */}
-        <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#002069] rounded mb-4 border border-blue-400/20">
-          <span className="w-2 h-2 rounded-xs bg-[#bb0013]" />
-          <span className="text-[11px] font-extrabold text-[#dce1ff] tracking-widest uppercase">
-            INVITATION TO PARTNER
-          </span>
-        </div>
-
-        <h2 className="text-3xl sm:text-5xl lg:text-[56px] font-extrabold tracking-tight text-white max-w-3xl leading-[1.12]">
-          Let&apos;s build something meaningful together.
-        </h2>
-
-        <p className="text-base sm:text-lg text-blue-100/90 max-w-2xl mt-4 leading-relaxed">
-          Connect with Edge India Business Group and become part of an authoritative community built around authentic relationships, high-conviction ideas, and strategic opportunities.
-        </p>
-
-        {/* Action Triggers */}
-        <div className="mt-8 flex flex-col sm:flex-row items-center gap-4">
-          <button
-            onClick={onOpenConnect}
-            className="group inline-flex items-center justify-center px-8 py-4 bg-white text-[#002069] text-base font-bold rounded shadow-lg hover:bg-slate-50 transition-all cursor-pointer"
-          >
-            <span className="font-bold flex items-center gap-2 text-[#002069]">
-              Get In Touch
-              <ArrowRight className="w-5 h-5 text-[#bb0013] group-hover:translate-x-1.5 transition-transform" />
-            </span>
-          </button>
-
-          <button
-            onClick={onOpenProspectus}
-            className="inline-flex items-center justify-center gap-2 px-8 py-4 text-white text-sm font-semibold rounded border border-white/30 hover:bg-white/10 transition-colors"
-          >
-            <Download className="w-4 h-4 text-slate-300" />
-            Download Executive Prospectus
-          </button>
-        </div>
-
-        {/* Quick Institutional Metric Badges */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 mt-16 pt-12 border-t border-blue-400/20 w-full max-w-4xl text-center">
-          <div className="flex flex-col items-center">
-            <span className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-              500+
-            </span>
-            <span className="text-xs font-bold text-[#dce1ff] uppercase tracking-wider mt-1">
-              Active Executives
-            </span>
+    <section className="relative w-full overflow-hidden border-t-2 border-[#bb0013] bg-[#eff4ff]/70 py-12 text-[#0b1c30] sm:py-16 lg:py-20">
+      <div className="mx-auto max-w-[1280px] px-4 md:px-8 lg:px-12">
+        <div className="grid items-center gap-4 rounded-2xl border border-slate-200 bg-white px-5 py-7 shadow-sm sm:px-8 lg:grid-cols-[0.9fr_1.1fr] lg:gap-10 lg:px-12 lg:py-10">
+          <div className="flex min-w-0 items-center justify-center">
+            <LanyardCtaVisual />
           </div>
 
-          <div className="flex flex-col items-center">
-            <span className="text-3xl sm:text-4xl font-extrabold text-[#ffdad6] tracking-tight">
-              18+
-            </span>
-            <span className="text-xs font-bold text-[#dce1ff] uppercase tracking-wider mt-1">
-              Industry Verticals
-            </span>
-          </div>
+          <div className="flex flex-col items-start py-2 text-left sm:py-4 lg:py-8">
+            <div className="inline-flex items-center gap-2">
+              <span aria-hidden="true" className="h-1 w-2.5 rounded-full bg-[#bb0013]" />
+              <span className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#002069]">Join the Community</span>
+            </div>
 
-          <div className="flex flex-col items-center">
-            <span className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
-              ₹1,200 Cr+
-            </span>
-            <span className="text-xs font-bold text-[#dce1ff] uppercase tracking-wider mt-1">
-              Collaborative Deal Flow
-            </span>
+            <h2 className="mt-4 max-w-xl text-3xl font-extrabold leading-tight tracking-tight text-[#002069] sm:text-4xl lg:text-[48px]">
+              Interested in the EDGE India community?
+            </h2>
+
+            <p className="mt-5 max-w-xl text-base leading-relaxed text-slate-600 sm:text-lg">
+              Contact the Manjeri chapter to ask about membership or a guest invitation.
+            </p>
+
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group mt-7 inline-flex min-h-12 items-center justify-center gap-3 rounded bg-[#12358f] px-6 py-3 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#002069] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bb0013]"
+            >
+              Ask About Membership
+              <ArrowUpRight aria-hidden="true" className="h-4 w-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            </a>
+
+            <p className="mt-5 text-xs font-semibold tracking-wide text-slate-500">Membership <span className="px-1 text-[#bb0013]">•</span> Networking <span className="px-1 text-[#bb0013]">•</span> Collaboration</p>
+            <div className="mt-8 border-t border-slate-200 pt-5">
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#12358f]">Manjeri, Kerala</p>
+            </div>
           </div>
         </div>
       </div>

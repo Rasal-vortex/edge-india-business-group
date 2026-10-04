@@ -12,18 +12,18 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 export const metadata: Metadata = {
   title: 'Edge India Business Group | Building Connections. Creating Opportunities.',
   description:
-    'Building Connections, Creating Opportunities. High-governance convening ecosystem bringing ambitious Indian industry leaders, institutional founders, and strategic decision-makers together.',
+    'EDGE India Manjeri is a business community in Manjeri, Kerala, connecting entrepreneurs, professionals, and business leaders through networking, collaboration, and learning.',
   openGraph: {
     title: 'Edge India Business Group | Building Connections. Creating Opportunities.',
     description:
-      'Building Connections, Creating Opportunities. High-governance convening ecosystem bringing ambitious Indian industry leaders, institutional founders, and strategic decision-makers together.',
+      'EDGE India Manjeri is a business community in Manjeri, Kerala, connecting entrepreneurs, professionals, and business leaders through networking, collaboration, and learning.',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Edge India Business Group | Building Connections. Creating Opportunities.',
     description:
-      'Building Connections, Creating Opportunities. High-governance convening ecosystem bringing ambitious Indian industry leaders, institutional founders, and strategic decision-makers together.',
+      'EDGE India Manjeri is a business community in Manjeri, Kerala, connecting entrepreneurs, professionals, and business leaders through networking, collaboration, and learning.',
   },
 };
 

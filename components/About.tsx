@@ -2,14 +2,10 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { ArrowRight, ChevronDown, ChevronUp, Shield, Handshake, Globe, TrendingUp } from 'lucide-react';
+import { ChevronDown, ChevronUp } from 'lucide-react';
 import { BRAND_ASSETS } from './data';
 
-interface AboutProps {
-  onLearnMore?: () => void;
-}
-
-export default function About({ onLearnMore }: AboutProps) {
+export default function About() {
   const [expandedPillar, setExpandedPillar] = useState<number | null>(null);
 
   const togglePillar = (index: number) => {
@@ -33,7 +29,7 @@ export default function About({ onLearnMore }: AboutProps) {
           </h2>
 
           <p className="text-base sm:text-lg text-slate-600 leading-relaxed">
-            Edge India Business Group brings forward-looking business pioneers together through meaningful institutional relationships, bilateral collaboration, shared intelligence, and actionable expansion pipelines.
+            EDGE India Manjeri connects entrepreneurs, professionals, and business leaders in a local community focused on trusted relationships, collaboration, learning, and growth.
           </p>
         </div>
 
@@ -46,15 +42,15 @@ export default function About({ onLearnMore }: AboutProps) {
                 <Image
                   fill
                   className="object-cover"
-                  alt="Diverse group of prominent Indian businesswomen and businessmen engaging in high-level executive networking and thought leadership summit."
+                  alt="Illustrative image representing a business networking gathering."
                   src={BRAND_ASSETS.aboutConference}
                   referrerPolicy="no-referrer"
                   sizes="(max-width: 1024px) 100vw, 50vw"
                 />
                 <div className="absolute inset-0 bg-[#002069]/20 mix-blend-multiply" />
                 <div className="absolute bottom-3 left-3 right-3 p-3 bg-white/90 backdrop-blur-sm rounded text-xs text-slate-700">
-                  <p className="font-bold text-[#002069]">National Leadership Summit</p>
-                  <p className="text-[11px] text-slate-500">Cross-industry convening of 350+ founders & MDs</p>
+                  <p className="font-bold text-[#002069]">EDGE India Manjeri</p>
+                  <p className="text-[11px] text-slate-500">Illustrative image · Business, community, growth</p>
                 </div>
               </div>
 
@@ -80,21 +76,21 @@ export default function About({ onLearnMore }: AboutProps) {
                 <div className="w-full">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg sm:text-xl text-[#002069] font-bold">
-                      Meaningful Connections
+                      Trusted Networking
                     </h3>
                     <span className="text-slate-400">
                       {expandedPillar === 1 ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                     </span>
                   </div>
                   <p className="text-sm text-slate-600 mt-1 leading-relaxed">
-                    Fostering trusted, high-trust alliances across premier Indian industrial and technology corridors—linking established family offices, tech unicorns, and mid-market innovators from Mumbai to Bengaluru, Delhi NCR to Hyderabad.
+                    Building trusted business relationships among entrepreneurs, professionals, and business leaders in Manjeri.
                   </p>
 
                   {expandedPillar === 1 && (
                     <div className="mt-3 pt-3 border-t border-slate-100 text-xs text-slate-500 space-y-1 animate-fade-in">
-                      <p>• Verified peer network with zero unsolicited commercial solicitation.</p>
-                      <p>• Private quarterly bilateral exchanges between manufacturing titans and software unicorns.</p>
-                      <p>• Regional secretariats active in Mumbai, Bengaluru, Delhi NCR, and Hyderabad.</p>
+                      <p>• A local space to meet and build business connections.</p>
+                      <p>• Opportunities to find reliable partners and collaborate.</p>
+                      <p>• Community based in Manjeri, Kerala.</p>
                     </div>
                   )}
                 </div>
@@ -113,21 +109,21 @@ export default function About({ onLearnMore }: AboutProps) {
                 <div className="w-full">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg sm:text-xl text-[#002069] font-bold">
-                      Collaborative Growth
+                      Learning Through Meetings
                     </h3>
                     <span className="text-slate-400">
                       {expandedPillar === 2 ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                     </span>
                   </div>
                   <p className="text-sm text-slate-600 mt-1 leading-relaxed">
-                    Facilitating cross-sector operational masterminds, peer-level strategic governance reviews, and co-investment syndicates that multiply capacity and de-risk market expansion for member organizations.
+                    Meetups, training sessions, and expert talks give local business people opportunities to share knowledge and learn from one another.
                   </p>
 
                   {expandedPillar === 2 && (
                     <div className="mt-3 pt-3 border-t border-slate-100 text-xs text-slate-500 space-y-1 animate-fade-in">
-                      <p>• Cross-sector syndicate underwriting framework for clean-tech and industrial capex.</p>
-                      <p>• Shared supply chain intelligence countering global geopolitical and shipping friction.</p>
-                      <p>• Independent governance and audit advisory for pre-IPO preparedness.</p>
+                      <p>• Business Evolution Meetings and Business Acceleration sessions.</p>
+                      <p>• Learner’s Meetings on practical business topics.</p>
+                      <p>• AI sessions featuring Sainudheen Kaderi, co-founder of Coyot AI.</p>
                     </div>
                   )}
                 </div>
@@ -146,21 +142,21 @@ export default function About({ onLearnMore }: AboutProps) {
                 <div className="w-full">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg sm:text-xl text-[#002069] font-bold">
-                      Shared Opportunities
+                      Local Collaboration & Growth
                     </h3>
                     <span className="text-slate-400">
                       {expandedPillar === 3 ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                     </span>
                   </div>
                   <p className="text-sm text-slate-600 mt-1 leading-relaxed">
-                    Securing preferential access to overseas trade delegations, apex regulatory dialogues, proprietary early-stage investment pipelines, and high-impact institutional joint ventures.
+                    The chapter encourages collaboration and helps bring attention to new ventures in the regional business community.
                   </p>
 
                   {expandedPillar === 3 && (
                     <div className="mt-3 pt-3 border-t border-slate-100 text-xs text-slate-500 space-y-1 animate-fade-in">
-                      <p>• Official representation on ministerial economic delegations to GCC, EMEA, and ASEAN.</p>
-                      <p>• Access to proprietary pre-screened deal room evaluating ₹1,200 Cr in active pipeline.</p>
-                      <p>• Fast-track institutional partnerships with leading public infrastructure concessions.</p>
+                      <p>• Meetings can be held in person or online through Google Meet.</p>
+                      <p>• The community supports local business initiatives.</p>
+                      <p>• The profile records support for the Nashadz E-Commerce stock-launching ceremony.</p>
                     </div>
                   )}
                 </div>
