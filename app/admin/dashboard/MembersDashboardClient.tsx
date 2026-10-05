@@ -8,6 +8,7 @@ import { ArrowDownUp, ArrowLeft, Building2, Check, ChevronDown, CirclePlus, File
 import imageCompression from 'browser-image-compression';
 import { createClient } from '@/lib/supabase/client';
 import type { MemberRow } from '@/lib/members';
+import RouteTransitionLoader from '@/components/ui/RouteTransitionLoader';
 
 const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
 const MAX_SOURCE_PHOTO_BYTES = 5 * 1024 * 1024;
@@ -226,6 +227,7 @@ export default function AdminMembersDashboard({ initialMembers, initialLoadError
   const [sortNewestFirst, setSortNewestFirst] = useState(true);
   const [saveStage, setSaveStage] = useState<SaveStage>(null);
   const [compressionProgress, setCompressionProgress] = useState(0);
+  const [returningToWebsite, setReturningToWebsite] = useState(false);
   const isSaving = saveStage !== null;
 
   const shownMembers = useMemo(() => {
@@ -388,9 +390,8 @@ export default function AdminMembersDashboard({ initialMembers, initialLoadError
             <h1 className="mt-0.5 truncate text-sm font-extrabold text-[#002069] sm:text-base">Member directory</h1>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
-            <span className="hidden rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-[9px] font-extrabold uppercase tracking-wider text-emerald-800 sm:inline-flex">Connected</span>
             <button type="button" onClick={handleSignOut} className="inline-flex min-h-9 items-center gap-1.5 rounded-md border border-slate-200 px-3 text-xs font-bold text-slate-600 transition hover:border-[#12358f]/40 hover:text-[#12358f]"><LogOut aria-hidden="true" className="h-3.5 w-3.5" /><span className="hidden sm:inline">Sign out</span></button>
-            <Link href="/" className="inline-flex min-h-9 items-center gap-1.5 rounded-md border border-slate-200 px-3 text-xs font-bold text-slate-600 transition hover:border-[#12358f]/40 hover:text-[#12358f]"><ArrowLeft aria-hidden="true" className="h-3.5 w-3.5" /><span className="hidden sm:inline">Website</span></Link>
+            <Link href="/" onClick={(event) => { if (event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) setReturningToWebsite(true); }} className="inline-flex min-h-9 items-center gap-1.5 rounded-md border border-slate-200 px-3 text-xs font-bold text-slate-600 transition hover:border-[#12358f]/40 hover:text-[#12358f]"><ArrowLeft aria-hidden="true" className="h-3.5 w-3.5" /><span className="hidden sm:inline">Website</span></Link>
           </div>
         </header>
 
@@ -446,6 +447,7 @@ export default function AdminMembersDashboard({ initialMembers, initialLoadError
       {toast ? <div role="status" className="fixed bottom-5 right-5 z-[80] flex max-w-sm items-center gap-2 rounded-lg bg-[#002069] px-4 py-3 text-xs font-semibold text-white shadow-xl"><Check aria-hidden="true" className="h-4 w-4 shrink-0 text-emerald-300" />{toast}</div> : null}
       {isFormOpen ? <MemberFormDialog key={formMember?.id ?? 'new-member'} member={formMember} designationOptions={designationOptions} categoryOptions={categoryOptions} onClose={() => { setIsFormOpen(false); setFormMember(null); }} onSave={saveMember} isSaving={isSaving} saveStage={saveStage} compressionProgress={compressionProgress} /> : null}
       {deleteMember ? <div className="fixed inset-0 z-[75] flex items-center justify-center bg-slate-950/45 p-4" onMouseDown={(event) => { if (event.target === event.currentTarget) setDeleteMember(null); }}><section role="alertdialog" aria-modal="true" aria-labelledby="delete-title" aria-describedby="delete-description" className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl"><div className="flex h-11 w-11 items-center justify-center rounded-full bg-rose-50 text-rose-600"><Trash2 aria-hidden="true" className="h-5 w-5" /></div><h2 id="delete-title" className="mt-4 text-lg font-extrabold text-[#002069]">Delete this member?</h2><p id="delete-description" className="mt-2 text-sm leading-6 text-slate-500">Permanently remove <strong className="text-slate-700">{deleteMember.name}</strong> from the member directory?</p><div className="mt-6 flex justify-end gap-3"><button type="button" onClick={() => setDeleteMember(null)} className="min-h-10 rounded-md border border-slate-200 px-4 text-sm font-bold text-slate-600 hover:bg-slate-50">Cancel</button><button type="button" onClick={confirmDelete} className="min-h-10 rounded-md bg-rose-600 px-4 text-sm font-bold text-white transition hover:bg-rose-700">Delete member</button></div></section></div> : null}
+      {returningToWebsite ? <RouteTransitionLoader message="Returning to the Edge India website…" /> : null}
     </div>
   );
 }

@@ -2,16 +2,30 @@
 
 import React from 'react';
 import Image from 'next/image';
-import { ArrowUpRight } from 'lucide-react';
+import { ArrowUpRight, Bot, Code2, Cpu, GraduationCap, Megaphone, Rocket } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
+import Aurora from './Aurora';
 
 const VORTEX_LOGO_SRC = '/compony-logos/vortex-logo-vertical.png';
-const VORTEX_URL = 'https://www.vortexglobaltechnologies.in/';
+const VORTEX_SERVICES_URL = 'https://www.vortexglobaltechnologies.in/#services';
 
 export default function VortexPartnerSection() {
   const reduceMotion = useReducedMotion();
+  const [swapVortexButton, setSwapVortexButton] = React.useState(false);
+  const vortexLabelRef = React.useRef<HTMLSpanElement>(null);
+  const [vortexLabelWidth, setVortexLabelWidth] = React.useState(0);
   const enter = { opacity: 1, y: 0 };
   const initial = reduceMotion ? false : { opacity: 0, y: 18 };
+
+  React.useEffect(() => {
+    const label = vortexLabelRef.current;
+    if (!label) return;
+    const updateWidth = () => setVortexLabelWidth(label.getBoundingClientRect().width);
+    updateWidth();
+    const observer = new ResizeObserver(updateWidth);
+    observer.observe(label);
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <section
@@ -19,18 +33,10 @@ export default function VortexPartnerSection() {
       aria-labelledby="vortex-partner-heading"
       className="relative isolate min-h-[100svh] w-full overflow-hidden border-b border-slate-200/80"
     >
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -z-10 bg-[#f7f9fe]"
-        style={{
-          backgroundImage:
-            'radial-gradient(circle at 78% 24%, rgba(18,53,143,0.08), transparent 28%), radial-gradient(circle at 18% 78%, rgba(187,0,19,0.035), transparent 25%), linear-gradient(rgba(18,53,143,0.025) 1px, transparent 1px), linear-gradient(90deg, rgba(18,53,143,0.025) 1px, transparent 1px)',
-          backgroundSize: 'auto, auto, 48px 48px, 48px 48px',
-        }}
-      />
+      <Aurora colorStops={['#582c9f', '#c07acb', '#29245f']} />
 
       <div className="relative z-10 mx-auto flex min-h-[100svh] max-w-[1280px] flex-col justify-center px-4 py-14 md:px-8 lg:px-12">
-        <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-16">
+        <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:gap-12">
         <motion.div
           initial={initial}
           whileInView={enter}
@@ -45,28 +51,55 @@ export default function VortexPartnerSection() {
             </span>
           </div>
 
-          <h2
+          <motion.h2
             id="vortex-partner-heading"
+            initial={reduceMotion ? false : { opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.25 }}
+            transition={{ duration: reduceMotion ? 0 : 0.75, ease: 'easeOut' }}
             className="text-3xl font-extrabold leading-tight tracking-tight text-[#0b1c30] sm:text-4xl lg:text-[44px]"
           >
-            Powered by Technology.
+            Powered by AI.
             <br />
             <span className="text-[#12358f]">Built for Growth.</span>
-          </h2>
+          </motion.h2>
 
-          <p className="mt-5 max-w-xl text-base leading-relaxed text-slate-600 sm:text-lg">
-            Vortex Technology Hub provides the technology, digital infrastructure, and technical support that powers the Edge India Business Group experience.
-          </p>
+          <motion.p
+            initial={reduceMotion ? false : { opacity: 0, y: 14 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.25 }}
+            transition={{ duration: reduceMotion ? 0 : 0.75, delay: reduceMotion ? 0 : 0.14, ease: 'easeOut' }}
+            className="mt-5 max-w-xl text-base leading-relaxed text-slate-600 sm:text-lg"
+          >
+            Vortex Global Technologies works across AI, software, automation, and emerging technology. As Edge India’s technology partner, Vortex supports the digital experience behind the community.
+          </motion.p>
 
-          <a
-            href={VORTEX_URL}
+          <motion.a
+            href={VORTEX_SERVICES_URL}
             target="_blank"
             rel="noreferrer"
-            className="group mt-7 inline-flex min-h-12 items-center gap-3 rounded bg-[#12358f] px-6 py-3 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#002069] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bb0013]"
+            onHoverStart={() => setSwapVortexButton(true)}
+            onHoverEnd={() => setSwapVortexButton(false)}
+            onFocus={() => setSwapVortexButton(true)}
+            onBlur={() => setSwapVortexButton(false)}
+            className={`group mt-7 inline-flex min-h-14 items-center justify-center gap-4 rounded-full bg-white py-2 text-sm font-bold text-[#001438] shadow-sm transition-[padding,transform] duration-300 hover:scale-[1.02] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${swapVortexButton ? 'pl-2 pr-6' : 'pl-6 pr-2'}`}
           >
-            Explore Vortex
-            <ArrowUpRight aria-hidden="true" className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-          </a>
+            <motion.span
+              ref={vortexLabelRef}
+              animate={{ x: swapVortexButton ? 56 : 0 }}
+              transition={{ type: 'spring', stiffness: 280, damping: 26 }}
+              className="inline-block whitespace-nowrap"
+            >
+              Explore Vortex
+            </motion.span>
+            <motion.span
+              animate={{ x: swapVortexButton ? -(vortexLabelWidth + 16) : 0, rotate: swapVortexButton ? 45 : 0 }}
+              transition={{ type: 'spring', stiffness: 280, damping: 26 }}
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#001438] text-white"
+            >
+              <ArrowUpRight className="h-4 w-4" />
+            </motion.span>
+          </motion.a>
         </motion.div>
 
         <motion.div
@@ -74,43 +107,16 @@ export default function VortexPartnerSection() {
           whileInView={enter}
           viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: reduceMotion ? 0 : 0.8, delay: reduceMotion ? 0 : 0.12, ease: 'easeOut' }}
-          className="relative mx-auto flex min-h-[230px] w-full max-w-[540px] items-center justify-center overflow-hidden rounded-2xl border border-[#d8e3f5] bg-[#eff4ff]/75 p-5 sm:min-h-[320px] sm:p-10"
+          className="relative mx-auto flex min-h-[260px] w-full max-w-[680px] items-center justify-center sm:min-h-[380px]"
         >
-          <svg
-            aria-hidden="true"
-            className="absolute inset-0 h-full w-full text-[#12358f]/20"
-            viewBox="0 0 560 360"
-            fill="none"
-          >
-            <path d="M0 180H115L160 135H225M560 180H445L400 225H335" stroke="currentColor" strokeWidth="1.5" />
-            <path d="M280 0V85M280 275V360M0 72H75L115 112M560 288H485L445 248" stroke="currentColor" strokeWidth="1.5" />
-            <circle cx="115" cy="180" r="4" fill="#bb0013" />
-            <circle cx="445" cy="180" r="4" fill="#12358f" />
-            <circle cx="280" cy="85" r="3" fill="#12358f" />
-            <circle cx="280" cy="275" r="3" fill="#bb0013" />
-            <circle cx="75" cy="72" r="3" fill="#12358f" />
-            <circle cx="485" cy="288" r="3" fill="#bb0013" />
-            <circle cx="280" cy="180" r="112" stroke="currentColor" strokeDasharray="3 8" />
-            <circle cx="280" cy="180" r="148" stroke="currentColor" strokeDasharray="1 10" />
-          </svg>
-
-          <div className="relative z-10 flex min-h-40 w-full max-w-[330px] flex-col items-center justify-center rounded-xl border border-white/90 bg-white/90 px-5 py-7 text-center shadow-[0_16px_50px_rgba(0,32,105,0.10)] backdrop-blur-sm sm:min-h-44">
-            <div className="relative h-20 w-full max-w-[260px]">
-              <Image
-                src={VORTEX_LOGO_SRC}
-                alt="Vortex Global Technologies logo"
-                fill
-                sizes="260px"
-                className="object-contain"
-              />
-            </div>
-            <span className="mt-4 text-[10px] font-extrabold uppercase tracking-[0.2em] text-[#bb0013]">
-              Technology Partner
-            </span>
-            <span className="mt-1 text-xs font-bold uppercase tracking-[0.14em] text-[#002069]">
-              Edge India Business Group
-            </span>
-          </div>
+          <Image
+            src={VORTEX_LOGO_SRC}
+            alt="Vortex Global Technologies logo"
+            width={760}
+            height={760}
+            sizes="(max-width: 640px) 92vw, (max-width: 1024px) 680px, 760px"
+            className="h-auto w-[min(92vw,760px)] object-contain"
+          />
         </motion.div>
         </div>
 
@@ -119,22 +125,38 @@ export default function VortexPartnerSection() {
           whileInView={enter}
           viewport={{ once: true, amount: 0.2 }}
           transition={{ duration: reduceMotion ? 0 : 0.65, delay: reduceMotion ? 0 : 0.18, ease: 'easeOut' }}
-          className="mt-10 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4"
+          className="mt-10 grid grid-cols-1 border-t border-dashed border-[#12358f]/30 sm:grid-cols-2 lg:grid-cols-3"
         >
           {[
-            ['Technology', 'The technical foundation behind the Edge India platform.'],
-            ['Digital Infrastructure', 'The systems supporting the website and digital experience.'],
-            ['Technical Support', 'Technical support for the Edge India digital experience.'],
-            ['Digital Experience', 'A connected digital touchpoint for the Edge India community.'],
-          ].map(([title, description], index) => (
-            <div key={title} className="rounded-xl border border-white/90 bg-white/75 p-5 shadow-[0_8px_28px_rgba(0,32,105,0.045)] backdrop-blur-sm">
-              <div className="flex items-center gap-2">
-                <span aria-hidden="true" className={`h-1.5 w-1.5 rounded-full ${index % 2 === 0 ? 'bg-[#12358f]' : 'bg-[#bb0013]'}`} />
-                <h3 className="text-sm font-extrabold text-[#002069]">{title}</h3>
-              </div>
-              <p className="mt-2 text-xs leading-relaxed text-slate-600 sm:text-sm">{description}</p>
-            </div>
-          ))}
+            { title: 'AI Integrated Technology Institute', Icon: GraduationCap },
+            { title: 'AI Integrated IT Solutions', Icon: Code2 },
+            { title: 'AI Integrated Automation Products', Icon: Bot },
+            { title: 'AI Era of Digital Marketing', Icon: Megaphone },
+            { title: 'AI / IoT and Robotics Lab', Icon: Cpu },
+            { title: 'Startup Incubation', Icon: Rocket },
+          ].map(({ title, Icon }, index) => {
+            const mobileRowEnd = index === 5;
+            const tabletRowEnd = index >= 4;
+            const desktopRowEnd = index >= 3;
+            const tabletColumnEnd = index % 2 === 1;
+            const desktopColumnEnd = index % 3 === 2;
+
+            return (
+              <a
+                key={title}
+                href={VORTEX_SERVICES_URL}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={`Explore ${title} on the Vortex website`}
+                className={`group flex min-h-40 flex-col items-start justify-between px-5 py-8 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#12358f] sm:px-6 sm:py-9 ${mobileRowEnd ? '' : 'border-b border-dashed border-[#12358f]/30'} ${index % 2 === 0 ? 'sm:border-r sm:border-dashed sm:border-[#12358f]/30' : ''} ${tabletRowEnd ? 'sm:border-b-0' : ''} ${!desktopColumnEnd ? 'lg:border-r lg:border-dashed lg:border-[#12358f]/30' : 'lg:border-r-0'} ${desktopRowEnd ? 'lg:border-b-0' : 'lg:border-b lg:border-dashed lg:border-[#12358f]/30'} ${tabletColumnEnd ? 'sm:border-r-0 lg:border-r' : ''}`}
+              >
+                <Icon aria-hidden="true" className="h-7 w-7 text-[#30205c] transition-transform duration-300 group-hover:-translate-y-0.5" strokeWidth={1.7} />
+                <h3 className="max-w-[20rem] text-lg font-semibold leading-tight tracking-tight text-[#0b1c30] transition-colors group-hover:text-[#12358f] sm:text-xl">
+                  {title}
+                </h3>
+              </a>
+            );
+          })}
         </motion.div>
       </div>
     </section>

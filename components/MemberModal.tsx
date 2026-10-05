@@ -1,16 +1,15 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
-import { X, ArrowRight, MapPin, Calendar, Award, Briefcase } from 'lucide-react';
+import { X, MapPin, Calendar, Award, Briefcase } from 'lucide-react';
 import { Member } from './data';
 
 interface MemberModalProps {
   member: Member | null;
   onClose: () => void;
-  onRequestIntro: (member: Member) => void;
 }
 
-export default function MemberModal({ member, onClose, onRequestIntro }: MemberModalProps) {
+export default function MemberModal({ member, onClose }: MemberModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const onCloseRef = useRef(onClose);
@@ -160,29 +159,13 @@ export default function MemberModal({ member, onClose, onRequestIntro }: MemberM
             </div>
           </div> : null}
 
-          <div className="border-t border-slate-200 pt-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-xs text-slate-500">
-              Contact the Manjeri chapter to ask about this member.
-            </div>
-
-            <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:gap-3">
-              <button
-                onClick={onClose}
-                className="px-4 py-2 text-sm text-slate-600 hover:text-slate-900 font-semibold"
-              >
-                Close
-              </button>
-              <button
-                onClick={() => {
-                  onClose();
-                  onRequestIntro(member);
-                }}
-                className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-[#12358f] hover:bg-[#002069] text-white text-sm font-semibold rounded shadow-sm transition-all"
-              >
-                Ask About This Member
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
+          <div className="border-t border-slate-200 pt-4 flex justify-end">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 text-sm text-slate-600 hover:text-slate-900 font-semibold"
+            >
+              Close
+            </button>
           </div>
         </div>
       </div>

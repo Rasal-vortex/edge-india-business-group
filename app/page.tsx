@@ -11,8 +11,7 @@ import CTA from '@/components/CTA';
 import Footer from '@/components/Footer';
 import ConnectModal from '@/components/ConnectModal';
 import MemberModal from '@/components/MemberModal';
-import LightboxModal from '@/components/LightboxModal';
-import { Member, GalleryItem } from '@/components/data';
+import { Member } from '@/components/data';
 
 export default function HomePage() {
   const [activeSection, setActiveSection] = useState('home');
@@ -24,7 +23,6 @@ export default function HomePage() {
   const [connectPrefillContext, setConnectPrefillContext] = useState('');
 
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
-  const [selectedGalleryItem, setSelectedGalleryItem] = useState<GalleryItem | null>(null);
 
   // Let the section nearest the viewport's reading line control the active nav item.
   useEffect(() => {
@@ -94,18 +92,6 @@ export default function HomePage() {
     setSelectedMember(member);
   };
 
-  const handleGallerySelect = (item: GalleryItem) => {
-    setSelectedGalleryItem(item);
-  };
-
-  const handleRequestIntro = (member: Member) => {
-    openConnect('Membership Inquiry', `Ask the chapter about connecting with ${member.name}`);
-  };
-
-  const handleGalleryInquiry = (item: GalleryItem) => {
-    openConnect('Membership Inquiry', `Ask the chapter about ${item.title}`);
-  };
-
   return (
     <div className="min-h-screen flex flex-col bg-[#f8f9ff] text-[#0b1c30]">
       {/* Primary Sticky Top Bar */}
@@ -133,9 +119,7 @@ export default function HomePage() {
         />
 
         {/* 4. Moments / Gallery Section */}
-        <Gallery
-          onSelectItem={handleGallerySelect}
-        />
+        <Gallery />
 
         {/* 5. Technology Partner */}
         <VortexPartnerSection />
@@ -164,13 +148,6 @@ export default function HomePage() {
       <MemberModal
         member={selectedMember}
         onClose={() => setSelectedMember(null)}
-        onRequestIntro={handleRequestIntro}
-      />
-
-      <LightboxModal
-        item={selectedGalleryItem}
-        onClose={() => setSelectedGalleryItem(null)}
-        onInquire={handleGalleryInquiry}
       />
 
     </div>

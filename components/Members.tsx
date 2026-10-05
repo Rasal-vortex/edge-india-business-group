@@ -101,9 +101,7 @@ export default function Members({ members: initialMembers, directory = false, on
             <h2 className="text-3xl font-extrabold tracking-tight text-[#0b1c30] sm:text-4xl lg:text-[40px]">
               Meet the people behind Edge India Business Group
             </h2>
-            <p className="max-w-2xl text-base leading-relaxed text-slate-600">
-              Meet entrepreneurs, professionals, and business leaders in the Manjeri community.
-            </p>
+          
           </div>
 
 

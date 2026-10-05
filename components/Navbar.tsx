@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { User, Menu, X, ArrowRight } from 'lucide-react';
 import { BRAND_ASSETS } from './data';
 import GooeyNav from '@/components/ui/GooeyNav';
+import RouteTransitionLoader from '@/components/ui/RouteTransitionLoader';
 import { createClient } from '@/lib/supabase/client';
 
 interface NavbarProps {
@@ -67,12 +68,11 @@ export default function Navbar({
       router.push(!error && admin ? '/admin/dashboard' : '/admin');
     } catch {
       router.push('/admin');
-    } finally {
-      setOpeningAdmin(false);
     }
   };
 
   return (
+    <>
     <header
       className={`fixed z-40 border transition-all duration-300 ${
         hasScrolled
@@ -96,14 +96,7 @@ export default function Navbar({
               priority
             />
           </div>
-          <div className={`hidden flex-col border-l pl-3 transition-colors duration-300 sm:flex ${hasScrolled ? 'border-slate-300' : 'border-white/25'}`}>
-            <span className={`text-xs font-bold uppercase tracking-wider transition-colors duration-300 ${hasScrolled ? 'text-[#002069]' : 'text-white'}`}>
-              Edge India
-            </span>
-            <span className={`text-[10px] font-bold uppercase tracking-widest transition-colors duration-300 ${hasScrolled ? 'text-slate-500' : 'text-white/75'}`}>
-              Business Group
-            </span>
-          </div>
+          
         </div>
 
         {/* Desktop Nav Zone */}
@@ -191,5 +184,7 @@ export default function Navbar({
         </div>
       )}
     </header>
+    {openingAdmin ? <RouteTransitionLoader message="Opening the admin area…" /> : null}
+    </>
   );
 }

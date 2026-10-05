@@ -17,11 +17,6 @@ export default function MembersDirectoryPage() {
     setIsConnectOpen(true);
   };
 
-  const requestIntroduction = (member: Member) => {
-    setSelectedMember(null);
-    openConnect(`Ask the chapter about connecting with ${member.name}`);
-  };
-
   const navigateToSection = (sectionId: string) => {
     if (sectionId === 'members') {
       document.getElementById('members')?.scrollIntoView({ behavior: 'smooth' });
@@ -48,7 +43,6 @@ export default function MembersDirectoryPage() {
       <MemberModal
         member={selectedMember}
         onClose={() => setSelectedMember(null)}
-        onRequestIntro={requestIntroduction}
       />
       <ConnectModal
         key={connectContext}
