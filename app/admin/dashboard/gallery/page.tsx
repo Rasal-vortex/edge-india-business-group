@@ -1,11 +1,10 @@
 import { redirect } from 'next/navigation';
-import AdminMembersDashboard from './MembersDashboardClient';
 import { createClient } from '@/lib/supabase/server';
-import type { MemberRow } from '@/lib/members';
+import GalleryDashboardClient, { type GalleryRow } from './GalleryDashboardClient';
 
 export const dynamic = 'force-dynamic';
 
-export default async function AdminMembersPage() {
+export default async function AdminGalleryPage() {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const userId = claimsData?.claims?.sub;
@@ -19,9 +18,10 @@ export default async function AdminMembersPage() {
   if (adminError || !admin) redirect('/admin');
 
   const { data, error } = await supabase
-    .from('members')
+    .from('gallery_items')
     .select('*')
-    .order('created_at', { ascending: false });
+    .order('display_order', { ascending: true })
+    .order('created_at', { ascending: true });
 
-  return <AdminMembersDashboard initialMembers={(data ?? []) as MemberRow[]} initialLoadError={error?.message ?? ''} />;
+  return <GalleryDashboardClient initialItems={(data ?? []) as GalleryRow[]} initialLoadError={error?.message ?? ''} />;
 }

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowDownUp, ArrowLeft, Building2, Check, ChevronDown, CirclePlus, FileText, LayoutDashboard, LogOut, Pencil, Search, Trash2, Users, X } from 'lucide-react';
+import { ArrowDownUp, ArrowLeft, Check, ChevronDown, CirclePlus, Images, LoaderCircle, LogOut, Pencil, Search, Trash2, Users, X } from 'lucide-react';
 import imageCompression from 'browser-image-compression';
 import { createClient } from '@/lib/supabase/client';
 import type { MemberRow } from '@/lib/members';
@@ -166,14 +166,20 @@ function MemberFormDialog({
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-1 flex-col">
-          <div className="grid flex-1 gap-4 px-5 py-6 sm:grid-cols-2 sm:px-8">
-            <div><label className={labelClass} htmlFor="member-name">Name <span className="text-[#bb0013]">*</span></label><input autoFocus id="member-name" name="name" required defaultValue={member?.name ?? ''} className={inputClass} placeholder="Full name" /></div>
-            <div><label className={labelClass} htmlFor="member-company">Company <span className="text-[#bb0013]">*</span></label><input id="member-company" name="company" required defaultValue={member?.company ?? ''} className={inputClass} placeholder="Company or organization" /></div>
-            <div><label className={labelClass} htmlFor="member-designation">Designation</label><input id="member-designation" name="designation" list="member-designation-options" defaultValue={member?.designation ?? ''} className={inputClass} placeholder="Type or choose a designation" /><datalist id="member-designation-options">{designationOptions.map((designation) => <option key={designation} value={designation} />)}</datalist><p className="mt-1 text-[10px] text-slate-400">Saved designations appear here for next time.</p></div>
-            <div><label className={labelClass} htmlFor="member-category">Category</label><input id="member-category" name="category" list="member-category-options" defaultValue={member?.category ?? ''} className={inputClass} placeholder="Type or choose a category" /><datalist id="member-category-options">{categoryOptions.map((category) => <option key={category} value={category} />)}</datalist><p className="mt-1 text-[10px] text-slate-400">Saved categories appear here for next time.</p></div>
-            <div className="sm:col-span-2"><label className={labelClass} htmlFor="member-bio">Bio</label><textarea id="member-bio" name="bio" rows={4} defaultValue={member?.bio ?? ''} className={`${inputClass} resize-y`} placeholder="A short professional introduction" /></div>
-            <fieldset className="sm:col-span-2">
-              <legend className={labelClass}>Member photo <span className="font-normal text-slate-400">(optional, choose one source)</span></legend>
+          <div className="flex-1 space-y-5 px-5 py-6 sm:px-8">
+            <section className="space-y-3 rounded-lg border border-slate-100 bg-slate-50/60 p-4">
+              <div><h3 className="text-sm font-bold text-[#002069]">Basic information</h3><p className="mt-0.5 text-[11px] text-slate-500">Add the member’s name and company.</p></div>
+              <div className="grid gap-3 sm:grid-cols-2"><div><label className={labelClass} htmlFor="member-name">Name <span className="text-[#bb0013]">*</span></label><input autoFocus id="member-name" name="name" required defaultValue={member?.name ?? ''} className={inputClass} placeholder="Full name" /></div>
+              <div><label className={labelClass} htmlFor="member-company">Company <span className="text-[#bb0013]">*</span></label><input id="member-company" name="company" required defaultValue={member?.company ?? ''} className={inputClass} placeholder="Company or organization" /></div></div>
+            </section>
+            <section className="space-y-3 rounded-lg border border-slate-100 p-4">
+              <div><h3 className="text-sm font-bold text-[#002069]">Professional details</h3><p className="mt-0.5 text-[11px] text-slate-500">Optional details help visitors understand their work.</p></div>
+              <div className="grid gap-3 sm:grid-cols-2"><div><label className={labelClass} htmlFor="member-designation">Designation</label><input id="member-designation" name="designation" list="member-designation-options" defaultValue={member?.designation ?? ''} className={inputClass} placeholder="Type or choose a designation" /><datalist id="member-designation-options">{designationOptions.map((designation) => <option key={designation} value={designation} />)}</datalist></div>
+              <div><label className={labelClass} htmlFor="member-category">Category</label><input id="member-category" name="category" list="member-category-options" defaultValue={member?.category ?? ''} className={inputClass} placeholder="Type or choose a category" /><datalist id="member-category-options">{categoryOptions.map((category) => <option key={category} value={category} />)}</datalist></div>
+              <div className="sm:col-span-2"><label className={labelClass} htmlFor="member-bio">Short bio</label><textarea id="member-bio" name="bio" rows={3} defaultValue={member?.bio ?? ''} className={`${inputClass} resize-y`} placeholder="A short professional introduction" /></div></div>
+            </section>
+            <fieldset className="rounded-lg border border-slate-100 p-4">
+              <legend className={`${labelClass} px-1`}>Profile photo <span className="font-normal text-slate-400">(optional)</span></legend>
               <div className="mb-3 inline-flex rounded-md border border-slate-200 bg-slate-50 p-1" role="group" aria-label="Choose photo source">
                 <button type="button" aria-pressed={imageMode === 'url'} onClick={() => changeImageMode('url')} className={`min-h-8 rounded px-3 text-xs font-bold transition ${imageMode === 'url' ? 'bg-white text-[#12358f] shadow-sm' : 'text-slate-500 hover:text-[#12358f]'}`}>Photo URL</button>
                 <button type="button" aria-pressed={imageMode === 'upload'} onClick={() => changeImageMode('upload')} className={`min-h-8 rounded px-3 text-xs font-bold transition ${imageMode === 'upload' ? 'bg-white text-[#12358f] shadow-sm' : 'text-slate-500 hover:text-[#12358f]'}`}>Upload from computer</button>
@@ -192,10 +198,8 @@ function MemberFormDialog({
                 </div>
               )}
             </fieldset>
-            <div><label className={labelClass} htmlFor="member-website">Website</label><input id="member-website" name="website" type="url" defaultValue={member?.website ?? ''} className={inputClass} placeholder="https://company.com" /></div>
-            <div><label className={labelClass} htmlFor="member-email">Email</label><input id="member-email" name="email" type="email" defaultValue={member?.email ?? ''} className={inputClass} placeholder="name@company.com" /></div>
-            <div className="sm:col-span-2"><label className={labelClass} htmlFor="member-phone">Phone</label><input id="member-phone" name="phone" type="tel" defaultValue={member?.phone ?? ''} className={inputClass} placeholder="Optional contact number" /></div>
-            {error ? <p role="alert" className="sm:col-span-2 rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700">{error}</p> : null}
+            <section className="space-y-3 rounded-lg border border-slate-100 p-4"><div><h3 className="text-sm font-bold text-[#002069]">Contact details</h3><p className="mt-0.5 text-[11px] text-slate-500">Optional ways for people to reach the member or their company.</p></div><div className="grid gap-3 sm:grid-cols-2"><div><label className={labelClass} htmlFor="member-website">Website</label><input id="member-website" name="website" type="url" defaultValue={member?.website ?? ''} className={inputClass} placeholder="https://company.com" /></div><div><label className={labelClass} htmlFor="member-email">Email</label><input id="member-email" name="email" type="email" defaultValue={member?.email ?? ''} className={inputClass} placeholder="name@company.com" /></div><div className="sm:col-span-2"><label className={labelClass} htmlFor="member-phone">Phone</label><input id="member-phone" name="phone" type="tel" defaultValue={member?.phone ?? ''} className={inputClass} placeholder="Optional contact number" /></div></div></section>
+            {error ? <p role="alert" className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700">{error}</p> : null}
           </div>
           <div className="sticky bottom-0 border-t border-slate-200 bg-white px-5 py-4 sm:px-8">
             {saveStage ? <div className="mb-3" role="status" aria-live="polite">
@@ -223,11 +227,13 @@ export default function AdminMembersDashboard({ initialMembers, initialLoadError
   const [formMember, setFormMember] = useState<AdminMember | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [deleteMember, setDeleteMember] = useState<AdminMember | null>(null);
+  const [isDeletingMember, setIsDeletingMember] = useState(false);
   const [toast, setToast] = useState('');
   const [sortNewestFirst, setSortNewestFirst] = useState(true);
   const [saveStage, setSaveStage] = useState<SaveStage>(null);
   const [compressionProgress, setCompressionProgress] = useState(0);
   const [returningToWebsite, setReturningToWebsite] = useState(false);
+  const [openingGallery, setOpeningGallery] = useState(false);
   const isSaving = saveStage !== null;
 
   const shownMembers = useMemo(() => {
@@ -338,18 +344,23 @@ export default function AdminMembersDashboard({ initialMembers, initialLoadError
   };
 
   const confirmDelete = async () => {
-    if (!deleteMember) return;
+    if (!deleteMember || isDeletingMember) return;
+    setIsDeletingMember(true);
     const supabase = createClient();
-    const { error } = await supabase.from('members').delete().eq('id', deleteMember.id);
-    if (error) {
-      notify(error.message);
-      return;
+    try {
+      const { error } = await supabase.from('members').delete().eq('id', deleteMember.id);
+      if (error) {
+        notify(error.message);
+        return;
+      }
+      setMembers((current) => current.filter((member) => member.id !== deleteMember.id));
+      const oldPhoto = photoPath(deleteMember.image);
+      if (oldPhoto) await supabase.storage.from('member-photos').remove([oldPhoto]);
+      notify('Member removed.');
+      setDeleteMember(null);
+    } finally {
+      setIsDeletingMember(false);
     }
-    setMembers((current) => current.filter((member) => member.id !== deleteMember.id));
-    const oldPhoto = photoPath(deleteMember.image);
-    if (oldPhoto) await supabase.storage.from('member-photos').remove([oldPhoto]);
-    notify('Member removed.');
-    setDeleteMember(null);
   };
 
   const openEdit = (member: AdminMember) => {
@@ -373,9 +384,8 @@ export default function AdminMembersDashboard({ initialMembers, initialLoadError
         <div className="px-4 pt-7">
           <p className="px-3 pb-3 text-[10px] font-extrabold uppercase tracking-[0.18em] text-slate-400">Workspace</p>
           <div className="space-y-1">
-            <div className="flex min-h-11 items-center gap-3 rounded-md px-3 text-sm font-semibold text-slate-500"><LayoutDashboard aria-hidden="true" className="h-4 w-4" />Overview</div>
-            <div aria-current="page" className="flex min-h-11 items-center gap-3 rounded-md border-l-[3px] border-[#bb0013] bg-[#12358f]/[0.07] px-3 text-sm font-bold text-[#002069]"><Users aria-hidden="true" className="h-4 w-4" />Members <span className="ml-auto rounded bg-white px-2 py-0.5 text-[10px] text-[#12358f]">{members.length}</span></div>
-            <div className="flex min-h-11 items-center gap-3 rounded-md px-3 text-sm font-semibold text-slate-400"><FileText aria-hidden="true" className="h-4 w-4" />Activity <span className="ml-auto text-[9px] uppercase tracking-wide">Later</span></div>
+            <div aria-current="page" className="flex min-h-11 items-center gap-3 rounded-md border-l-[3px] border-[#bb0013] bg-[#12358f]/[0.07] px-3 text-sm font-bold text-[#002069]"><Users aria-hidden="true" className="h-4 w-4" />Members</div>
+            <Link href="/admin/dashboard/gallery" onClick={(event) => { if (event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) setOpeningGallery(true); }} className="flex min-h-11 items-center gap-3 rounded-md px-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-50 hover:text-[#12358f]"><Images aria-hidden="true" className="h-4 w-4" />Gallery</Link>
           </div>
         </div>
         <div className="mt-auto border-t border-slate-100 p-4">
@@ -390,6 +400,7 @@ export default function AdminMembersDashboard({ initialMembers, initialLoadError
             <h1 className="mt-0.5 truncate text-sm font-extrabold text-[#002069] sm:text-base">Member directory</h1>
           </div>
           <div className="flex items-center gap-2 sm:gap-3">
+            <Link href="/admin/dashboard/gallery" aria-label="Gallery" onClick={(event) => { if (event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) setOpeningGallery(true); }} className="inline-flex min-h-9 items-center gap-1.5 rounded-md border border-slate-200 px-3 text-xs font-bold text-slate-600 transition hover:border-[#12358f]/40 hover:text-[#12358f]"><Images aria-hidden="true" className="h-3.5 w-3.5" /><span className="hidden sm:inline">Gallery</span></Link>
             <button type="button" onClick={handleSignOut} className="inline-flex min-h-9 items-center gap-1.5 rounded-md border border-slate-200 px-3 text-xs font-bold text-slate-600 transition hover:border-[#12358f]/40 hover:text-[#12358f]"><LogOut aria-hidden="true" className="h-3.5 w-3.5" /><span className="hidden sm:inline">Sign out</span></button>
             <Link href="/" onClick={(event) => { if (event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) setReturningToWebsite(true); }} className="inline-flex min-h-9 items-center gap-1.5 rounded-md border border-slate-200 px-3 text-xs font-bold text-slate-600 transition hover:border-[#12358f]/40 hover:text-[#12358f]"><ArrowLeft aria-hidden="true" className="h-3.5 w-3.5" /><span className="hidden sm:inline">Website</span></Link>
           </div>
@@ -407,14 +418,9 @@ export default function AdminMembersDashboard({ initialMembers, initialLoadError
 
           {initialLoadError ? <div role="alert" className="mb-6 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3.5 text-xs leading-5 text-rose-800">Could not load saved members: {initialLoadError}</div> : null}
 
-          <section aria-label="Member directory summary" className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-5 lg:gap-4">
-            <div className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5"><p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total profiles</p><p className="mt-2 text-2xl font-extrabold text-[#002069]">{members.length}</p><p className="mt-1 text-[11px] text-slate-500">Saved member records</p></div>
-            {categoryOptions.map((category) => <div key={category} className="rounded-lg border border-slate-200 bg-white p-4 sm:p-5"><p className="truncate text-[10px] font-bold uppercase tracking-wider text-slate-400">{category}</p><p className="mt-2 text-2xl font-extrabold text-[#002069]">{members.filter((member) => member.category === category).length}</p><p className="mt-1 text-[11px] text-slate-500">Profiles in category</p></div>)}
-          </section>
-
           <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
             <div className="flex flex-col gap-4 border-b border-slate-100 p-4 sm:p-5 lg:flex-row lg:items-center lg:justify-between">
-              <div><h3 className="text-sm font-extrabold text-[#002069]">All members</h3><p className="mt-1 text-xs text-slate-500">{shownMembers.length} matching {shownMembers.length === 1 ? 'profile' : 'profiles'}</p></div>
+              <div><h3 className="text-sm font-extrabold text-[#002069]">All members</h3><p className="mt-1 text-xs text-slate-500">Search and update member profiles.</p></div>
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                 <label className="relative block sm:w-64"><span className="sr-only">Search members by name or company</span><Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search name or company" className="min-h-10 w-full rounded-md border border-slate-200 py-2 pl-9 pr-3 text-xs outline-none transition placeholder:text-slate-400 focus:border-[#12358f] focus:ring-4 focus:ring-[#12358f]/10" /></label>
                 <label className="relative block sm:w-48"><span className="sr-only">Filter by category</span><select value={filter} onChange={(event) => setFilter(event.target.value)} className="min-h-10 w-full appearance-none rounded-md border border-slate-200 bg-white py-2 pl-3 pr-9 text-xs font-semibold text-slate-600 outline-none transition focus:border-[#12358f] focus:ring-4 focus:ring-[#12358f]/10"><option>All categories</option>{categoryOptions.map((category) => <option key={category}>{category}</option>)}</select><ChevronDown aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" /></label>
@@ -446,7 +452,8 @@ export default function AdminMembersDashboard({ initialMembers, initialLoadError
 
       {toast ? <div role="status" className="fixed bottom-5 right-5 z-[80] flex max-w-sm items-center gap-2 rounded-lg bg-[#002069] px-4 py-3 text-xs font-semibold text-white shadow-xl"><Check aria-hidden="true" className="h-4 w-4 shrink-0 text-emerald-300" />{toast}</div> : null}
       {isFormOpen ? <MemberFormDialog key={formMember?.id ?? 'new-member'} member={formMember} designationOptions={designationOptions} categoryOptions={categoryOptions} onClose={() => { setIsFormOpen(false); setFormMember(null); }} onSave={saveMember} isSaving={isSaving} saveStage={saveStage} compressionProgress={compressionProgress} /> : null}
-      {deleteMember ? <div className="fixed inset-0 z-[75] flex items-center justify-center bg-slate-950/45 p-4" onMouseDown={(event) => { if (event.target === event.currentTarget) setDeleteMember(null); }}><section role="alertdialog" aria-modal="true" aria-labelledby="delete-title" aria-describedby="delete-description" className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl"><div className="flex h-11 w-11 items-center justify-center rounded-full bg-rose-50 text-rose-600"><Trash2 aria-hidden="true" className="h-5 w-5" /></div><h2 id="delete-title" className="mt-4 text-lg font-extrabold text-[#002069]">Delete this member?</h2><p id="delete-description" className="mt-2 text-sm leading-6 text-slate-500">Permanently remove <strong className="text-slate-700">{deleteMember.name}</strong> from the member directory?</p><div className="mt-6 flex justify-end gap-3"><button type="button" onClick={() => setDeleteMember(null)} className="min-h-10 rounded-md border border-slate-200 px-4 text-sm font-bold text-slate-600 hover:bg-slate-50">Cancel</button><button type="button" onClick={confirmDelete} className="min-h-10 rounded-md bg-rose-600 px-4 text-sm font-bold text-white transition hover:bg-rose-700">Delete member</button></div></section></div> : null}
+      {deleteMember ? <div className="fixed inset-0 z-[75] flex items-center justify-center bg-slate-950/45 p-4" onMouseDown={(event) => { if (!isDeletingMember && event.target === event.currentTarget) setDeleteMember(null); }}><section role="alertdialog" aria-modal="true" aria-labelledby="delete-title" aria-describedby="delete-description" className="w-full max-w-md rounded-xl bg-white p-6 shadow-2xl"><div className="flex h-11 w-11 items-center justify-center rounded-full bg-rose-50 text-rose-600"><Trash2 aria-hidden="true" className="h-5 w-5" /></div><h2 id="delete-title" className="mt-4 text-lg font-extrabold text-[#002069]">Delete this member?</h2><p id="delete-description" className="mt-2 text-sm leading-6 text-slate-500">Permanently remove <strong className="text-slate-700">{deleteMember.name}</strong> from the member directory?</p><div className="mt-6 flex justify-end gap-3"><button type="button" disabled={isDeletingMember} onClick={() => setDeleteMember(null)} className="min-h-10 rounded-md border border-slate-200 px-4 text-sm font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-50">Cancel</button><button type="button" disabled={isDeletingMember} onClick={confirmDelete} className="inline-flex min-h-10 items-center gap-2 rounded-md bg-rose-600 px-4 text-sm font-bold text-white transition hover:bg-rose-700 disabled:cursor-wait disabled:opacity-70">{isDeletingMember ? <><LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin" />Deleting…</> : 'Delete member'}</button></div></section></div> : null}
+      {openingGallery ? <RouteTransitionLoader message="Opening gallery management…" /> : null}
       {returningToWebsite ? <RouteTransitionLoader message="Returning to the Edge India website…" /> : null}
     </div>
   );
