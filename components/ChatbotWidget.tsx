@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { ArrowUpRight, AudioLines, Bot, LoaderCircle, Mail, Mic, MicOff, Phone, Send, Trash2, X } from 'lucide-react';
+import { Modality } from '@google/genai';
 import type { LiveServerMessage, Session } from '@google/genai';
 import { VoicePoweredOrb } from '@/components/ui/voice-powered-orb';
 
@@ -204,7 +205,7 @@ export default function ChatbotWidget() {
       const ai = new GoogleGenAI({ apiKey: tokenPayload.token, httpOptions: { apiVersion: 'v1alpha' } });
       const session = await ai.live.connect({
         model: tokenPayload.model,
-        config: { responseModalities: ['AUDIO'] },
+        config: { responseModalities: [Modality.AUDIO] },
         callbacks: {
           onmessage: (message) => { void handleVoiceMessage(message); },
           onerror: () => { setVoiceError('Voice chat disconnected. Please try again.'); stopVoice(); setVoiceStatus('error'); },
