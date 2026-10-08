@@ -54,6 +54,16 @@
   font-weight: 800;
 }
 
+.fa-float {
+  display: inline-block;
+  animation: support-bot-float 2.4s ease-in-out infinite;
+}
+
+@keyframes support-bot-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
 .liquid-loader__bar {
   position: relative;
   display: block;
@@ -92,6 +102,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .fa-float {
+    animation: none;
+  }
+
   .liquid-loader__bar,
   .liquid-loader__bar::before {
     animation: none;

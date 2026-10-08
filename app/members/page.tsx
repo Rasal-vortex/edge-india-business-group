@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import ChatbotWidget from '@/components/ChatbotWidget';
 import ConnectModal from '@/components/ConnectModal';
 import MemberModal from '@/components/MemberModal';
 import Members from '@/components/Members';
@@ -51,6 +52,7 @@ export default function MembersDirectoryPage() {
         prefillSubject="Membership Inquiry"
         prefillContext={connectContext}
       />
+      <ChatbotWidget />
     </div>
   );
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import ChatbotWidget from '@/components/ChatbotWidget';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import About from '@/components/About';
@@ -149,6 +150,8 @@ export default function HomePage() {
         member={selectedMember}
         onClose={() => setSelectedMember(null)}
       />
+
+      <ChatbotWidget />
 
     </div>
   );

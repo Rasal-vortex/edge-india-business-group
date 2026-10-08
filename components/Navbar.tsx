@@ -122,7 +122,7 @@ export default function Navbar({
             onClick={handleAdminAccess}
             disabled={openingAdmin}
             aria-busy={openingAdmin}
-            className="w-8 h-8 rounded-full bg-[#002069] flex items-center justify-center shrink-0 text-white hover:bg-[#12358f] transition-colors"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#002069]/15 bg-white text-[#002069] transition-colors hover:bg-[#f4f7ff]"
             title="Admin dashboard or sign in"
             aria-label="Open admin dashboard or sign in"
           >

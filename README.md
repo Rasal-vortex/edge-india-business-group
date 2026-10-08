@@ -15,6 +15,8 @@ View your app in AI Studio: https://ai.studio/apps/82fd876e-f616-407b-8617-44ceb
 
 1. Install dependencies:
    `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
+2. Copy [.env.example](.env.example) to `.env.local` and set `GEMINI_API_KEY` to your Gemini API key. Keep it server-only; do not add the `NEXT_PUBLIC_` prefix.
 3. Run the app:
    `npm run dev`
+
+The public chatbot uses `GEMINI_API_KEY` for text replies and creates a short-lived, single-use Gemini Live token for microphone conversations. Voice chat requires microphone permission and a secure browser context (localhost or HTTPS). The browser never receives the server API key.
