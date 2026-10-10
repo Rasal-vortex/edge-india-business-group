@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { motion, useReducedMotion } from 'motion/react';
 import { createClient } from '@/lib/supabase/client';
 import ActivityCards, { type ActivityGalleryItem } from '@/components/ActivityCards';
+import ActivityChapterButton from '@/components/ActivityChapterButton';
 import RouteTransitionLoader from '@/components/ui/RouteTransitionLoader';
 
 interface ActivityChapter {
@@ -96,7 +97,7 @@ export default function Gallery() {
 
       {chapterError ? <p role="status" className="mb-4 text-center text-xs text-amber-800">Chapter filters are temporarily unavailable.</p> : null}
       <div role="group" aria-label="Filter activities by chapter" className="mb-7 flex flex-wrap justify-center gap-2">
-        {[{ name: 'All Chapters', slug: 'all' }, ...chapters].map((chapter) => <button key={chapter.slug} type="button" aria-pressed={selectedSlug === chapter.slug} onClick={() => setSelectedSlug(chapter.slug)} className={`min-h-10 rounded-full border px-4 text-xs font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#12358f] ${selectedSlug === chapter.slug ? 'border-[#12358f] bg-[#12358f] text-white shadow-sm' : 'border-[#12358f]/15 bg-white/80 text-[#34466a] hover:border-[#12358f]/40 hover:text-[#12358f]'}`}>{chapter.name}</button>)}
+        {[{ name: 'All Chapters', slug: 'all' }, ...chapters].map((chapter) => <ActivityChapterButton key={chapter.slug} name={chapter.name} slug={chapter.slug} selected={selectedSlug === chapter.slug} onClick={() => setSelectedSlug(chapter.slug)} />)}
       </div>
 
       {isLoading ? <div aria-label="Loading activities" className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4 lg:gap-6">{Array.from({ length: 4 }, (_, index) => <div key={index} className="h-[400px] animate-pulse rounded-2xl bg-white/70" />)}</div>

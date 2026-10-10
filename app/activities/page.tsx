@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import ActivitiesShell from './ActivitiesShell';
 import ActivityCards, { type ActivityGalleryItem } from '@/components/ActivityCards';
+import ActivityChapterButton from '@/components/ActivityChapterButton';
 import { createClient } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
@@ -90,7 +91,7 @@ export default async function ActivitiesPage({ searchParams }: { searchParams: S
         {invalidChapter ? <p role="status" className="mb-5 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-center text-sm text-amber-900">That chapter is unavailable. Showing all activities.</p> : null}
 
         <nav aria-label="Filter activities by chapter" className="mb-8 flex flex-wrap justify-center gap-2">
-          {[{ name: 'All Chapters', slug: 'all' }, ...chapters].map((chapter) => <Link key={chapter.slug} aria-current={selectedSlug === chapter.slug ? 'page' : undefined} href={pageHref(chapter.slug, 1)} className={`inline-flex min-h-10 items-center rounded-full border px-4 text-xs font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#12358f] ${selectedSlug === chapter.slug ? 'border-[#12358f] bg-[#12358f] text-white shadow-sm' : 'border-[#12358f]/15 bg-white text-[#34466a] hover:border-[#12358f]/40 hover:text-[#12358f]'}`}>{chapter.name}</Link>)}
+          {[{ name: 'All Chapters', slug: 'all' }, ...chapters].map((chapter) => <ActivityChapterButton key={chapter.slug} name={chapter.name} slug={chapter.slug} selected={selectedSlug === chapter.slug} href={pageHref(chapter.slug, 1)} />)}
         </nav>
 
         <div className="mb-5 flex flex-col items-center justify-between gap-2 sm:flex-row">
