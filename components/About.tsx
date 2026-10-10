@@ -213,8 +213,8 @@ export default function About() {
 
         <div className="relative mx-auto max-w-5xl">
           <div aria-hidden="true" className="absolute bottom-8 left-5 top-8 w-px bg-[#002069]/15 sm:left-1/2 sm:-translate-x-1/2" />
-          <div className="space-y-12 sm:space-y-16">
-            <div data-about-step className="relative grid min-h-[100svh] grid-cols-[2.5rem_minmax(0,1fr)] items-center gap-x-3 pt-[32vh] sm:grid-cols-[minmax(0,1fr)_4rem_minmax(0,1fr)] sm:gap-x-4">
+          <div className="space-y-6 md:space-y-16">
+            <div data-about-step className="relative grid min-h-0 grid-cols-[2.5rem_minmax(0,1fr)] items-center gap-x-3 py-8 md:min-h-[100svh] md:grid-cols-[minmax(0,1fr)_4rem_minmax(0,1fr)] md:gap-x-4 md:py-0 md:pt-[32vh]">
               <div className="col-start-1 row-start-1 hidden sm:block" />
               <span data-about-step-badge aria-hidden="true" className="z-10 col-start-1 row-start-1 flex h-10 w-10 items-center justify-center rounded-full border-2 border-[#002069] bg-white text-sm font-extrabold text-[#002069] shadow-sm sm:col-start-2 sm:mx-auto">01</span>
               <div
@@ -236,7 +236,7 @@ export default function About() {
               </div>
             </div>
 
-            <div data-about-step className="relative grid min-h-[100svh] grid-cols-[2.5rem_minmax(0,1fr)] items-center gap-x-3 pt-[32vh] sm:grid-cols-[minmax(0,1fr)_4rem_minmax(0,1fr)] sm:gap-x-4">
+            <div data-about-step className="relative grid min-h-0 grid-cols-[2.5rem_minmax(0,1fr)] items-center gap-x-3 py-8 md:min-h-[100svh] md:grid-cols-[minmax(0,1fr)_4rem_minmax(0,1fr)] md:gap-x-4 md:py-0 md:pt-[32vh]">
               <div className="col-start-1 row-start-1 hidden sm:block" />
               <span data-about-step-badge aria-hidden="true" className="z-10 col-start-1 row-start-1 flex h-10 w-10 items-center justify-center rounded-full border-2 border-[#bb0013] bg-white text-sm font-extrabold text-[#bb0013] shadow-sm sm:col-start-2 sm:mx-auto">02</span>
               <div
@@ -258,7 +258,7 @@ export default function About() {
               </div>
             </div>
 
-            <div data-about-step className="relative grid min-h-[100svh] grid-cols-[2.5rem_minmax(0,1fr)] items-center gap-x-3 pt-[32vh] sm:grid-cols-[minmax(0,1fr)_4rem_minmax(0,1fr)] sm:gap-x-4">
+            <div data-about-step className="relative grid min-h-0 grid-cols-[2.5rem_minmax(0,1fr)] items-center gap-x-3 py-8 md:min-h-[100svh] md:grid-cols-[minmax(0,1fr)_4rem_minmax(0,1fr)] md:gap-x-4 md:py-0 md:pt-[32vh]">
               <div className="col-start-1 row-start-1 hidden sm:block" />
               <span data-about-step-badge aria-hidden="true" className="z-10 col-start-1 row-start-1 flex h-10 w-10 items-center justify-center rounded-full border-2 border-[#002069] bg-white text-sm font-extrabold text-[#002069] shadow-sm sm:col-start-2 sm:mx-auto">03</span>
               <div

@@ -1,126 +1,115 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { motion, useReducedMotion } from 'motion/react';
-import { X } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import ActivityCards, { type ActivityGalleryItem } from '@/components/ActivityCards';
+import RouteTransitionLoader from '@/components/ui/RouteTransitionLoader';
 
-interface GalleryItem {
+interface ActivityChapter {
   id: string;
-  image_url: string | null;
-  instagram_url: string | null;
-  alt_text: string | null;
-  display_order: number;
+  name: string;
+  slug: string;
 }
 
-function instagramEmbedUrl(url: string) {
-  const parsed = new URL(url);
-  const path = parsed.pathname.replace(/\/$/, '');
-  return `https://www.instagram.com${path}/embed`;
+const preferredChapterOrder = ['manjeri', 'kondotty', 'calicut', 'wayanad'];
+
+function sortChapters(chapters: ActivityChapter[]) {
+  return [...chapters].sort((a, b) => {
+    const aIndex = preferredChapterOrder.indexOf(a.name.trim().toLowerCase());
+    const bIndex = preferredChapterOrder.indexOf(b.name.trim().toLowerCase());
+    if (aIndex !== -1 || bIndex !== -1) {
+      if (aIndex === -1) return 1;
+      if (bIndex === -1) return -1;
+      return aIndex - bIndex;
+    }
+    return a.name.localeCompare(b.name);
+  });
 }
 
 export default function Gallery() {
   const reduceMotion = useReducedMotion();
-  const [items, setItems] = useState<GalleryItem[]>([]);
+  const [chapters, setChapters] = useState<ActivityChapter[]>([]);
+  const [chaptersLoaded, setChaptersLoaded] = useState(false);
+  const [selectedSlug, setSelectedSlug] = useState('all');
+  const [items, setItems] = useState<ActivityGalleryItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [loadError, setLoadError] = useState(false);
-  const [selected, setSelected] = useState<GalleryItem | null>(null);
+  const [loadError, setLoadError] = useState('');
+  const [chapterError, setChapterError] = useState('');
+  const [openingActivities, setOpeningActivities] = useState(false);
 
   useEffect(() => {
     let active = true;
-    const load = async () => {
-      try {
-        const supabase = createClient();
-        const { data, error } = await supabase
-          .from('gallery_items')
-          .select('id,image_url,instagram_url,alt_text,display_order')
-          .eq('is_published', true)
-          .order('display_order', { ascending: true })
-          .order('created_at', { ascending: true });
-        if (error) throw error;
-        if (active) setItems((data ?? []) as GalleryItem[]);
-      } catch {
-        if (active) setLoadError(true);
-      } finally {
-        if (active) setIsLoading(false);
-      }
-    };
-    void load();
+    void createClient().from('chapters').select('id,name,slug').eq('is_active', true).order('name', { ascending: true }).then(({ data, error }) => {
+      if (!active) return;
+      if (error) setChapterError(error.message);
+      else setChapters(sortChapters((data ?? []) as ActivityChapter[]));
+      setChaptersLoaded(true);
+    });
     return () => { active = false; };
   }, []);
 
   useEffect(() => {
-    if (!selected) return;
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setSelected(null);
+    if (!chaptersLoaded) return;
+    let active = true;
+    const load = async () => {
+      setIsLoading(true);
+      setLoadError('');
+      const chapter = selectedSlug === 'all' ? null : chapters.find((entry) => entry.slug === selectedSlug);
+      if (selectedSlug !== 'all' && !chapter) {
+        setItems([]);
+        setIsLoading(false);
+        return;
+      }
+      let query = createClient().from('gallery_items').select('id,image_url,instagram_url,alt_text,display_order,created_at').eq('is_published', true);
+      if (chapter) query = query.eq('chapter_id', chapter.id);
+      const { data, error } = await query.order('display_order', { ascending: true }).order('created_at', { ascending: true }).order('id', { ascending: true }).limit(4);
+      if (!active) return;
+      if (error) setLoadError(error.message);
+      else setItems((data ?? []) as ActivityGalleryItem[]);
+      setIsLoading(false);
     };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [selected]);
+    void load();
+    return () => { active = false; };
+  }, [chaptersLoaded, chapters, selectedSlug]);
 
-  return (
-    <section className="w-full border-b border-slate-200 bg-[#eff4ff]/60 py-16 lg:py-24" id="gallery">
-      <div className="mx-auto max-w-[1440px] px-4 md:px-8 lg:px-12">
-        <div className="mb-10 flex justify-center text-center">
-          <motion.div
-            className="flex max-w-3xl flex-col items-center gap-2"
-            initial={reduceMotion ? 'visible' : 'hidden'}
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.35 }}
-            variants={{ visible: { transition: { staggerChildren: reduceMotion ? 0 : 0.12 } } }}
-          >
-            <motion.div className="inline-flex items-center gap-2" variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0, transition: { duration: reduceMotion ? 0 : 0.65, ease: 'easeOut' } } }}>
-              <span className="h-1 w-2.5 rounded-full bg-[#bb0013]" />
-              <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#002069]">ACTIVITIES</span>
-            </motion.div>
-            <motion.h2 className="text-3xl font-extrabold tracking-tight text-[#0b1c30] sm:text-4xl lg:text-[40px]" variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0, transition: { duration: reduceMotion ? 0 : 0.65, ease: 'easeOut' } } }}>
-              Ways our community connects, learns, and grows.
-            </motion.h2>
-            <motion.p className="text-base text-slate-600" variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0, transition: { duration: reduceMotion ? 0 : 0.65, ease: 'easeOut' } } }}>
-              Explore the meeting formats, learning sessions, and local business activities described by the Manjeri chapter.
-            </motion.p>
+  const selectedChapter = chapters.find((chapter) => chapter.slug === selectedSlug);
+  const viewAllHref = `/activities?chapter=${encodeURIComponent(selectedSlug)}`;
+
+  return <section className="w-full border-b border-slate-200 bg-[#eff4ff]/60 py-16 lg:py-24" id="gallery">
+    <div className="mx-auto max-w-[1440px] px-4 md:px-8 lg:px-12">
+      <div className="mb-8 flex justify-center text-center">
+        <motion.div className="flex max-w-3xl flex-col items-center gap-2" initial={reduceMotion ? 'visible' : 'hidden'} whileInView="visible" viewport={{ once: true, amount: 0.35 }} variants={{ visible: { transition: { staggerChildren: reduceMotion ? 0 : 0.12 } } }}>
+          <motion.div className="inline-flex items-center gap-2" variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0, transition: { duration: reduceMotion ? 0 : 0.65, ease: 'easeOut' } } }}>
+            <span className="h-1 w-2.5 rounded-full bg-[#bb0013]" />
+            <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#002069]">ACTIVITIES</span>
           </motion.div>
-        </div>
-
-        {isLoading ? (
-          <div aria-label="Loading gallery" className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4 lg:gap-6">
-            {Array.from({ length: 4 }, (_, index) => <div key={index} className={`h-[400px] animate-pulse rounded-2xl bg-white/70 ${index >= 4 ? 'hidden sm:block' : ''}`} />)}
-          </div>
-        ) : loadError ? (
-          <p role="status" className="py-10 text-center text-sm text-slate-500">The gallery is temporarily unavailable. Please try again soon.</p>
-        ) : items.length === 0 ? (
-          <p className="py-10 text-center text-sm text-slate-500">New community activities will appear here soon.</p>
-        ) : (
-          <div aria-label="Community activity gallery" className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4 lg:gap-6">
-            {items.map((item, index) => {
-              const hiddenOnMobile = index >= 5 ? 'hidden sm:block' : '';
-              if (item.image_url) {
-                return (
-                  <article key={item.id} className={`group relative h-[400px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_12px_34px_rgba(0,32,105,0.09)] transition-shadow duration-300 hover:shadow-[0_20px_48px_rgba(0,32,105,0.16)] ${hiddenOnMobile}`}>
-                    <img src={item.image_url} alt={item.alt_text ?? ''} loading="lazy" className="h-full w-full object-cover" />
-                    {item.instagram_url ? <button type="button" onClick={() => setSelected(item)} aria-label="Open the related Instagram post or Reel" className="absolute inset-0 flex items-end justify-end bg-gradient-to-t from-slate-950/35 via-transparent to-transparent p-4"><span className="rounded-full bg-white px-4 py-2 text-xs font-bold text-[#002069]">Play on Instagram ↗</span></button> : null}
-                  </article>
-                );
-              }
-              if (!item.instagram_url) return null;
-              return (
-                <article key={item.id} className={`h-[400px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_12px_34px_rgba(0,32,105,0.09)] transition-shadow duration-300 hover:shadow-[0_20px_48px_rgba(0,32,105,0.16)] ${hiddenOnMobile}`}>
-                  <iframe src={instagramEmbedUrl(item.instagram_url)} title={`Instagram community video ${index + 1}`} loading="lazy" scrolling="no" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" allowFullScreen className="block h-full min-h-[400px] w-full overflow-hidden border-0 bg-white" />
-                </article>
-              );
-            })}
-          </div>
-        )}
+          <motion.h2 className="text-3xl font-extrabold tracking-tight text-[#0b1c30] sm:text-4xl lg:text-[40px]" variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0, transition: { duration: reduceMotion ? 0 : 0.65, ease: 'easeOut' } } }}>
+            Ways our community connects, learns, and grows.
+          </motion.h2>
+          <motion.p className="text-base text-slate-600" variants={{ hidden: { opacity: 0, y: 12 }, visible: { opacity: 1, y: 0, transition: { duration: reduceMotion ? 0 : 0.65, ease: 'easeOut' } } }}>
+            Explore meetings, learning sessions, and community activities by chapter.
+          </motion.p>
+        </motion.div>
       </div>
 
-      {selected?.instagram_url ? (
-        <div role="presentation" className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/75 p-3 backdrop-blur-sm sm:p-6" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelected(null); }}>
-          <section role="dialog" aria-modal="true" aria-label="Instagram community post" className="relative h-[min(82vh,760px)] w-full max-w-[520px] overflow-hidden rounded-2xl bg-white shadow-2xl">
-            <button type="button" onClick={() => setSelected(null)} aria-label="Close Instagram post" className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/95 text-slate-700 shadow"><X className="h-5 w-5" /></button>
-            <iframe src={instagramEmbedUrl(selected.instagram_url)} title="Instagram community video" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share" allowFullScreen className="h-full w-full border-0" />
-          </section>
-        </div>
-      ) : null}
-    </section>
-  );
+      {chapterError ? <p role="status" className="mb-4 text-center text-xs text-amber-800">Chapter filters are temporarily unavailable.</p> : null}
+      <div role="group" aria-label="Filter activities by chapter" className="mb-7 flex flex-wrap justify-center gap-2">
+        {[{ name: 'All Chapters', slug: 'all' }, ...chapters].map((chapter) => <button key={chapter.slug} type="button" aria-pressed={selectedSlug === chapter.slug} onClick={() => setSelectedSlug(chapter.slug)} className={`min-h-10 rounded-full border px-4 text-xs font-bold transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#12358f] ${selectedSlug === chapter.slug ? 'border-[#12358f] bg-[#12358f] text-white shadow-sm' : 'border-[#12358f]/15 bg-white/80 text-[#34466a] hover:border-[#12358f]/40 hover:text-[#12358f]'}`}>{chapter.name}</button>)}
+      </div>
+
+      {isLoading ? <div aria-label="Loading activities" className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4 lg:gap-6">{Array.from({ length: 4 }, (_, index) => <div key={index} className="h-[400px] animate-pulse rounded-2xl bg-white/70" />)}</div>
+        : loadError ? <p role="alert" className="py-10 text-center text-sm text-slate-500">Activities are temporarily unavailable. Please try again soon.</p>
+          : items.length ? <ActivityCards items={items} />
+            : <p className="py-10 text-center text-sm text-slate-500">{selectedChapter ? 'No activities available for this chapter yet.' : 'New community activities will appear here soon.'}</p>}
+
+      <div className="mt-8 flex justify-center">
+        <Link href={viewAllHref} onClick={(event) => {
+          if (event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey) setOpeningActivities(true);
+        }} className="inline-flex min-h-11 items-center justify-center rounded-full border border-[#12358f]/20 bg-white px-6 text-sm font-bold text-[#12358f] shadow-sm transition hover:border-[#12358f] hover:bg-[#12358f] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#12358f]">View all activities <span aria-hidden="true" className="ml-2">→</span></Link>
+      </div>
+    </div>
+    {openingActivities ? <RouteTransitionLoader message="Opening all activities…" /> : null}
+  </section>;
 }

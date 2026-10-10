@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Image from 'next/image';
-import { ArrowUpRight, Bot, Code2, Cpu, GraduationCap, Megaphone, Rocket } from 'lucide-react';
+import { ArrowUpRight } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
 import Aurora from './Aurora';
 
@@ -120,44 +120,6 @@ export default function VortexPartnerSection() {
         </motion.div>
         </div>
 
-        <motion.div
-          initial={initial}
-          whileInView={enter}
-          viewport={{ once: true, amount: 0.2 }}
-          transition={{ duration: reduceMotion ? 0 : 0.65, delay: reduceMotion ? 0 : 0.18, ease: 'easeOut' }}
-          className="mt-10 grid grid-cols-1 border-t border-dashed border-[#12358f]/30 sm:grid-cols-2 lg:grid-cols-3"
-        >
-          {[
-            { title: 'AI Integrated Technology Institute', Icon: GraduationCap },
-            { title: 'AI Integrated IT Solutions', Icon: Code2 },
-            { title: 'AI Integrated Automation Products', Icon: Bot },
-            { title: 'AI Era of Digital Marketing', Icon: Megaphone },
-            { title: 'AI / IoT and Robotics Lab', Icon: Cpu },
-            { title: 'Startup Incubation', Icon: Rocket },
-          ].map(({ title, Icon }, index) => {
-            const mobileRowEnd = index === 5;
-            const tabletRowEnd = index >= 4;
-            const desktopRowEnd = index >= 3;
-            const tabletColumnEnd = index % 2 === 1;
-            const desktopColumnEnd = index % 3 === 2;
-
-            return (
-              <a
-                key={title}
-                href={VORTEX_SERVICES_URL}
-                target="_blank"
-                rel="noreferrer"
-                aria-label={`Explore ${title} on the Vortex website`}
-                className={`group flex min-h-40 flex-col items-start justify-between px-5 py-8 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#12358f] sm:px-6 sm:py-9 ${mobileRowEnd ? '' : 'border-b border-dashed border-[#12358f]/30'} ${index % 2 === 0 ? 'sm:border-r sm:border-dashed sm:border-[#12358f]/30' : ''} ${tabletRowEnd ? 'sm:border-b-0' : ''} ${!desktopColumnEnd ? 'lg:border-r lg:border-dashed lg:border-[#12358f]/30' : 'lg:border-r-0'} ${desktopRowEnd ? 'lg:border-b-0' : 'lg:border-b lg:border-dashed lg:border-[#12358f]/30'} ${tabletColumnEnd ? 'sm:border-r-0 lg:border-r' : ''}`}
-              >
-                <Icon aria-hidden="true" className="h-7 w-7 text-[#30205c] transition-transform duration-300 group-hover:-translate-y-0.5" strokeWidth={1.7} />
-                <h3 className="max-w-[20rem] text-lg font-semibold leading-tight tracking-tight text-[#0b1c30] transition-colors group-hover:text-[#12358f] sm:text-xl">
-                  {title}
-                </h3>
-              </a>
-            );
-          })}
-        </motion.div>
       </div>
     </section>
   );
