@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import { ArrowLeft, Building2, Instagram, Mail, MapPin, Phone, Smartphone } from 'lucide-react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
-import { toPublicMember, type MemberRow } from '@/lib/members';
+import { slugifyMemberName, toPublicMember, type MemberRow } from '@/lib/members';
 
 function instagramHref(value?: string | null) {
   const clean = value?.trim();
@@ -58,8 +58,14 @@ function contactCardHref(member: ReturnType<typeof toPublicMember>) {
 export default async function MemberProfilePage({ params }: { params: Promise<{ username: string }> }) {
   const { username } = await params;
   const supabase = await createClient();
-  const { data, error } = await supabase.from('members').select('*').eq('username', username).eq('is_active', true).maybeSingle();
-  if (error || !data) notFound();
+  const { data: matchedData, error } = await supabase.from('members').select('*').eq('username', username).eq('is_active', true).maybeSingle();
+  let data = matchedData;
+  if (error || !data) {
+    const fallback = await supabase.from('members').select('*').eq('is_active', true);
+    if (fallback.error) notFound();
+    data = (fallback.data as MemberRow[]).find((row) => (row.username || slugifyMemberName(row.name)) === username) ?? null;
+  }
+  if (!data) notFound();
 
   const member = toPublicMember(data as MemberRow);
   const map = mapDetails(member.mapUrl);

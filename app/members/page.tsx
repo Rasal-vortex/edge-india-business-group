@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import ChatbotWidget from '@/components/ChatbotWidget';
 import ConnectModal from '@/components/ConnectModal';
 import Members from '@/components/Members';

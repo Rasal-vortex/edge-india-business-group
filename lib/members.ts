@@ -23,12 +23,22 @@ export interface MemberRow {
   updated_at: string;
 }
 
+export function slugifyMemberName(value: string) {
+  return value
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLocaleLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '') || 'member';
+}
+
 export function toPublicMember(row: MemberRow): Member {
   const category = row.category?.trim() ?? '';
 
   return {
     id: row.id,
-    username: row.username,
+    username: row.username || slugifyMemberName(row.name),
     name: row.name,
     role: row.designation || 'Member',
     badge: category || 'MEMBER',

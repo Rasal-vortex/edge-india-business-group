@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { ArrowDownUp, ArrowLeft, Check, ChevronDown, CirclePlus, Images, LoaderCircle, LogOut, Pencil, Search, Trash2, Users, X } from 'lucide-react';
 import imageCompression from 'browser-image-compression';
 import { createClient } from '@/lib/supabase/client';
-import type { MemberRow } from '@/lib/members';
+import { slugifyMemberName, type MemberRow } from '@/lib/members';
 import RouteTransitionLoader from '@/components/ui/RouteTransitionLoader';
 
 const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
@@ -38,7 +38,7 @@ interface AdminMember {
 type MemberFormValues = Omit<AdminMember, 'id'>;
 const fromRow = (row: MemberRow): AdminMember => ({
   id: row.id,
-  username: row.username,
+  username: row.username || slugifyMemberName(row.name),
   name: row.name,
   company: row.company,
   designation: row.designation,
@@ -66,14 +66,6 @@ const optionalValue = (value: FormDataEntryValue | null) => {
   const clean = String(value ?? '').trim();
   return clean || null;
 };
-
-const slugifyUsername = (value: string) => value
-  .normalize('NFKD')
-  .replace(/[\u0300-\u036f]/g, '')
-  .toLocaleLowerCase()
-  .trim()
-  .replace(/[^a-z0-9]+/g, '-')
-  .replace(/^-+|-+$/g, '') || 'member';
 
 function MemberFormDialog({
   member,
@@ -146,7 +138,7 @@ function MemberFormDialog({
     const data = new FormData(event.currentTarget);
     const name = String(data.get('name') ?? '').trim();
     const company = String(data.get('company') ?? '').trim();
-    const cleanUsername = slugifyUsername(String(data.get('username') ?? ''));
+    const cleanUsername = slugifyMemberName(String(data.get('username') ?? ''));
     if (!name || !company) {
       setError('Name and company are required.');
       return;
@@ -210,7 +202,7 @@ function MemberFormDialog({
           <div className="flex-1 space-y-5 px-5 py-6 sm:px-8">
             <section className="space-y-3 rounded-lg border border-slate-100 bg-slate-50/60 p-4">
               <div><h3 className="text-sm font-bold text-[#002069]">Basic information</h3><p className="mt-0.5 text-[11px] text-slate-500">Add the member’s name and company.</p></div>
-              <div className="grid gap-3 sm:grid-cols-2"><div><label className={labelClass} htmlFor="member-name">Entrepreneur name <span className="text-[#bb0013]">*</span></label><input autoFocus id="member-name" name="name" required defaultValue={member?.name ?? ''} onChange={(event) => { if (!member && !usernameManuallyEdited) setUsername(slugifyUsername(event.target.value)); }} className={inputClass} placeholder="Full name" /></div>
+              <div className="grid gap-3 sm:grid-cols-2"><div><label className={labelClass} htmlFor="member-name">Entrepreneur name <span className="text-[#bb0013]">*</span></label><input autoFocus id="member-name" name="name" required defaultValue={member?.name ?? ''} onChange={(event) => { if (!member && !usernameManuallyEdited) setUsername(slugifyMemberName(event.target.value)); }} className={inputClass} placeholder="Full name" /></div>
               <div><label className={labelClass} htmlFor="member-username">Profile username <span className="text-[#bb0013]">*</span></label><input id="member-username" name="username" required value={username} onChange={(event) => { setUsernameManuallyEdited(true); setUsername(event.target.value); setError(''); }} className={inputClass} placeholder="entrepreneur-name" autoCapitalize="none" autoCorrect="off" /><p className="mt-1 text-[10px] text-slate-500">Profile link: /members/{username || 'username'}</p></div>
               <div><label className={labelClass} htmlFor="member-company">Company <span className="text-[#bb0013]">*</span></label><input id="member-company" name="company" required defaultValue={member?.company ?? ''} className={inputClass} placeholder="Company or organization" /></div></div>
             </section>
