@@ -1,5 +1,6 @@
 export interface Member {
   id: string;
+  username: string;
   name: string;
   role: string;
   badge: string;
@@ -15,6 +16,11 @@ export interface Member {
   website?: string | null;
   email?: string | null;
   phone?: string | null;
+  companyLogo?: string | null;
+  personalInstagram?: string | null;
+  companyInstagram?: string | null;
+  officePhone?: string | null;
+  mapUrl?: string | null;
 }
 
 export interface GalleryItem {

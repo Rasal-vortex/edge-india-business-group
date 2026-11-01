@@ -2,6 +2,7 @@ import type { Member } from '@/components/data';
 
 export interface MemberRow {
   id: string;
+  username: string;
   name: string;
   company: string;
   designation: string | null;
@@ -11,6 +12,11 @@ export interface MemberRow {
   website: string | null;
   email: string | null;
   phone: string | null;
+  company_logo_url: string | null;
+  personal_instagram_url: string | null;
+  company_instagram_url: string | null;
+  office_phone: string | null;
+  map_url: string | null;
   is_active: boolean;
   display_order: number;
   created_at: string;
@@ -22,6 +28,7 @@ export function toPublicMember(row: MemberRow): Member {
 
   return {
     id: row.id,
+    username: row.username,
     name: row.name,
     role: row.designation || 'Member',
     badge: category || 'MEMBER',
@@ -37,6 +44,11 @@ export function toPublicMember(row: MemberRow): Member {
     website: row.website,
     email: row.email,
     phone: row.phone,
+    companyLogo: row.company_logo_url,
+    personalInstagram: row.personal_instagram_url,
+    companyInstagram: row.company_instagram_url,
+    officePhone: row.office_phone,
+    mapUrl: row.map_url,
   };
 }
 

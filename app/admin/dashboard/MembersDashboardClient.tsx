@@ -17,6 +17,7 @@ type SaveStage = 'compressing' | 'uploading' | 'saving' | null;
 
 interface AdminMember {
   id: string;
+  username: string;
   name: string;
   company: string;
   designation: string | null;
@@ -26,12 +27,18 @@ interface AdminMember {
   website: string | null;
   email: string | null;
   phone: string | null;
+  company_logo_url: string | null;
+  personal_instagram_url: string | null;
+  company_instagram_url: string | null;
+  office_phone: string | null;
+  map_url: string | null;
   is_active: boolean;
   display_order: number;
 }
 type MemberFormValues = Omit<AdminMember, 'id'>;
 const fromRow = (row: MemberRow): AdminMember => ({
   id: row.id,
+  username: row.username,
   name: row.name,
   company: row.company,
   designation: row.designation,
@@ -41,6 +48,11 @@ const fromRow = (row: MemberRow): AdminMember => ({
   website: row.website,
   email: row.email,
   phone: row.phone,
+  company_logo_url: row.company_logo_url,
+  personal_instagram_url: row.personal_instagram_url,
+  company_instagram_url: row.company_instagram_url,
+  office_phone: row.office_phone,
+  map_url: row.map_url,
   is_active: row.is_active,
   display_order: row.display_order,
 });
@@ -54,6 +66,14 @@ const optionalValue = (value: FormDataEntryValue | null) => {
   const clean = String(value ?? '').trim();
   return clean || null;
 };
+
+const slugifyUsername = (value: string) => value
+  .normalize('NFKD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .toLocaleLowerCase()
+  .trim()
+  .replace(/[^a-z0-9]+/g, '-')
+  .replace(/^-+|-+$/g, '') || 'member';
 
 function MemberFormDialog({
   member,
@@ -75,6 +95,8 @@ function MemberFormDialog({
   compressionProgress: number;
 }) {
   const [error, setError] = useState('');
+  const [username, setUsername] = useState(member?.username ?? '');
+  const [usernameManuallyEdited, setUsernameManuallyEdited] = useState(false);
   const [imageMode, setImageMode] = useState<'url' | 'upload'>('url');
   const [imageUrl, setImageUrl] = useState(member?.image ?? '');
   const [uploadPreview, setUploadPreview] = useState('');
@@ -124,8 +146,21 @@ function MemberFormDialog({
     const data = new FormData(event.currentTarget);
     const name = String(data.get('name') ?? '').trim();
     const company = String(data.get('company') ?? '').trim();
+    const cleanUsername = slugifyUsername(String(data.get('username') ?? ''));
     if (!name || !company) {
       setError('Name and company are required.');
+      return;
+    }
+    setUsername(cleanUsername);
+    let usernameQuery = createClient().from('members').select('id').ilike('username', cleanUsername);
+    if (member) usernameQuery = usernameQuery.neq('id', member.id);
+    const { data: usernameMatch, error: usernameCheckError } = await usernameQuery.maybeSingle();
+    if (usernameCheckError) {
+      setError('Could not verify that username. Please try again.');
+      return;
+    }
+    if (usernameMatch) {
+      setError('That username is already in use. Choose another username.');
       return;
     }
     if (selectedFile && (!SUPPORTED_PHOTO_TYPES.includes(selectedFile.type) || selectedFile.size > MAX_SOURCE_PHOTO_BYTES)) {
@@ -137,6 +172,7 @@ function MemberFormDialog({
       : (removeCurrentUpload ? null : member?.image ?? null);
     await onSave({
       name,
+      username: cleanUsername,
       company,
       designation: optionalValue(data.get('designation')),
       category: optionalValue(data.get('category')),
@@ -145,6 +181,11 @@ function MemberFormDialog({
       website: optionalValue(data.get('website')),
       email: optionalValue(data.get('email')),
       phone: optionalValue(data.get('phone')),
+      company_logo_url: optionalValue(data.get('company_logo_url')),
+      personal_instagram_url: optionalValue(data.get('personal_instagram_url')),
+      company_instagram_url: optionalValue(data.get('company_instagram_url')),
+      office_phone: optionalValue(data.get('office_phone')),
+      map_url: optionalValue(data.get('map_url')),
       is_active: member?.is_active ?? true,
       display_order: member?.display_order ?? 0,
     }, imageMode === 'upload' ? selectedFile : undefined);
@@ -169,7 +210,8 @@ function MemberFormDialog({
           <div className="flex-1 space-y-5 px-5 py-6 sm:px-8">
             <section className="space-y-3 rounded-lg border border-slate-100 bg-slate-50/60 p-4">
               <div><h3 className="text-sm font-bold text-[#002069]">Basic information</h3><p className="mt-0.5 text-[11px] text-slate-500">Add the member’s name and company.</p></div>
-              <div className="grid gap-3 sm:grid-cols-2"><div><label className={labelClass} htmlFor="member-name">Name <span className="text-[#bb0013]">*</span></label><input autoFocus id="member-name" name="name" required defaultValue={member?.name ?? ''} className={inputClass} placeholder="Full name" /></div>
+              <div className="grid gap-3 sm:grid-cols-2"><div><label className={labelClass} htmlFor="member-name">Entrepreneur name <span className="text-[#bb0013]">*</span></label><input autoFocus id="member-name" name="name" required defaultValue={member?.name ?? ''} onChange={(event) => { if (!member && !usernameManuallyEdited) setUsername(slugifyUsername(event.target.value)); }} className={inputClass} placeholder="Full name" /></div>
+              <div><label className={labelClass} htmlFor="member-username">Profile username <span className="text-[#bb0013]">*</span></label><input id="member-username" name="username" required value={username} onChange={(event) => { setUsernameManuallyEdited(true); setUsername(event.target.value); setError(''); }} className={inputClass} placeholder="entrepreneur-name" autoCapitalize="none" autoCorrect="off" /><p className="mt-1 text-[10px] text-slate-500">Profile link: /members/{username || 'username'}</p></div>
               <div><label className={labelClass} htmlFor="member-company">Company <span className="text-[#bb0013]">*</span></label><input id="member-company" name="company" required defaultValue={member?.company ?? ''} className={inputClass} placeholder="Company or organization" /></div></div>
             </section>
             <section className="space-y-3 rounded-lg border border-slate-100 p-4">
@@ -198,7 +240,7 @@ function MemberFormDialog({
                 </div>
               )}
             </fieldset>
-            <section className="space-y-3 rounded-lg border border-slate-100 p-4"><div><h3 className="text-sm font-bold text-[#002069]">Contact details</h3><p className="mt-0.5 text-[11px] text-slate-500">Optional ways for people to reach the member or their company.</p></div><div className="grid gap-3 sm:grid-cols-2"><div><label className={labelClass} htmlFor="member-website">Website</label><input id="member-website" name="website" type="url" defaultValue={member?.website ?? ''} className={inputClass} placeholder="https://company.com" /></div><div><label className={labelClass} htmlFor="member-email">Email</label><input id="member-email" name="email" type="email" defaultValue={member?.email ?? ''} className={inputClass} placeholder="name@company.com" /></div><div className="sm:col-span-2"><label className={labelClass} htmlFor="member-phone">Phone</label><input id="member-phone" name="phone" type="tel" defaultValue={member?.phone ?? ''} className={inputClass} placeholder="Optional contact number" /></div></div></section>
+            <section className="space-y-3 rounded-lg border border-slate-100 p-4"><div><h3 className="text-sm font-bold text-[#002069]">Contact and company profile</h3><p className="mt-0.5 text-[11px] text-slate-500">These details appear on the member’s public profile page.</p></div><div className="grid gap-3 sm:grid-cols-2"><div><label className={labelClass} htmlFor="member-website">Website</label><input id="member-website" name="website" type="url" defaultValue={member?.website ?? ''} className={inputClass} placeholder="https://company.com" /></div><div><label className={labelClass} htmlFor="member-email">Email</label><input id="member-email" name="email" type="email" defaultValue={member?.email ?? ''} className={inputClass} placeholder="name@company.com" /></div><div><label className={labelClass} htmlFor="member-phone">Personal phone</label><input id="member-phone" name="phone" type="tel" defaultValue={member?.phone ?? ''} className={inputClass} placeholder="Mobile contact number" /></div><div><label className={labelClass} htmlFor="member-office-phone">Office number</label><input id="member-office-phone" name="office_phone" type="tel" defaultValue={member?.office_phone ?? ''} className={inputClass} placeholder="Company office number" /></div><div><label className={labelClass} htmlFor="member-logo">Company logo URL</label><input id="member-logo" name="company_logo_url" type="url" defaultValue={member?.company_logo_url ?? ''} className={inputClass} placeholder="https://company.com/logo.png" /></div><div><label className={labelClass} htmlFor="member-personal-instagram">Personal Instagram</label><input id="member-personal-instagram" name="personal_instagram_url" defaultValue={member?.personal_instagram_url ?? ''} className={inputClass} placeholder="Instagram URL or username" /></div><div><label className={labelClass} htmlFor="member-company-instagram">Company Instagram</label><input id="member-company-instagram" name="company_instagram_url" defaultValue={member?.company_instagram_url ?? ''} className={inputClass} placeholder="Instagram URL or username" /></div><div className="sm:col-span-2"><label className={labelClass} htmlFor="member-map-url">Google Maps URL, place ID, or address</label><input id="member-map-url" name="map_url" defaultValue={member?.map_url ?? ''} className={inputClass} placeholder="Google Maps share/embed link, place ID, or address" /></div></div></section>
             {error ? <p role="alert" className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700">{error}</p> : null}
           </div>
           <div className="sticky bottom-0 border-t border-slate-200 bg-white px-5 py-4 sm:px-8">
@@ -301,6 +343,7 @@ export default function AdminMembersDashboard({ initialMembers, initialLoadError
       const fields = values;
       const payload = {
         name: fields.name,
+        username: fields.username,
         company: fields.company,
         designation: fields.designation,
         category: fields.category,
@@ -309,6 +352,11 @@ export default function AdminMembersDashboard({ initialMembers, initialLoadError
         website: fields.website,
         email: fields.email,
         phone: fields.phone,
+        company_logo_url: fields.company_logo_url,
+        personal_instagram_url: fields.personal_instagram_url,
+        company_instagram_url: fields.company_instagram_url,
+        office_phone: fields.office_phone,
+        map_url: fields.map_url,
         is_active: fields.is_active,
         display_order: fields.display_order,
       };
@@ -336,7 +384,10 @@ export default function AdminMembersDashboard({ initialMembers, initialLoadError
       setFormMember(null);
     } catch (error) {
       if (uploadedPath) await supabase.storage.from('member-photos').remove([uploadedPath]);
-      notify(error instanceof Error ? error.message : 'The member could not be saved. Please try again.');
+      const saveError = error as { code?: string; message?: string };
+      notify(saveError.code === '23505'
+        ? 'That username is already in use. Choose another username.'
+        : saveError.message || 'The member could not be saved. Please try again.');
     } finally {
       setSaveStage(null);
       setCompressionProgress(0);

@@ -1,15 +1,11 @@
 'use client';
 
-import { useState } from 'react';
 import ChatbotWidget from '@/components/ChatbotWidget';
 import ConnectModal from '@/components/ConnectModal';
-import MemberModal from '@/components/MemberModal';
 import Members from '@/components/Members';
 import Navbar from '@/components/Navbar';
-import type { Member } from '@/components/data';
 
 export default function MembersDirectoryPage() {
-  const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [connectContext, setConnectContext] = useState('');
   const [isConnectOpen, setIsConnectOpen] = useState(false);
 
@@ -37,14 +33,10 @@ export default function MembersDirectoryPage() {
       <main className="w-full pt-24">
         <Members
           directory
-          onSelectMember={setSelectedMember}
+          onSelectMember={(member) => window.location.assign(`/members/${member.username}`)}
         />
       </main>
 
-      <MemberModal
-        member={selectedMember}
-        onClose={() => setSelectedMember(null)}
-      />
       <ConnectModal
         key={connectContext}
         isOpen={isConnectOpen}

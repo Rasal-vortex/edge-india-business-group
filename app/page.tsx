@@ -11,7 +11,6 @@ import VortexPartnerSection from '@/components/VortexPartnerSection';
 import CTA from '@/components/CTA';
 import Footer from '@/components/Footer';
 import ConnectModal from '@/components/ConnectModal';
-import MemberModal from '@/components/MemberModal';
 import { Member } from '@/components/data';
 
 export default function HomePage() {
@@ -23,7 +22,6 @@ export default function HomePage() {
   const [connectPrefillSubject, setConnectPrefillSubject] = useState('');
   const [connectPrefillContext, setConnectPrefillContext] = useState('');
 
-  const [selectedMember, setSelectedMember] = useState<Member | null>(null);
 
   // Let the section nearest the viewport's reading line control the active nav item.
   useEffect(() => {
@@ -90,7 +88,7 @@ export default function HomePage() {
   };
 
   const handleMemberSelect = (member: Member) => {
-    setSelectedMember(member);
+    window.location.assign(`/members/${member.username}`);
   };
 
   return (
@@ -144,11 +142,6 @@ export default function HomePage() {
         onClose={() => setIsConnectOpen(false)}
         prefillSubject={connectPrefillSubject}
         prefillContext={connectPrefillContext}
-      />
-
-      <MemberModal
-        member={selectedMember}
-        onClose={() => setSelectedMember(null)}
       />
 
       <ChatbotWidget />
