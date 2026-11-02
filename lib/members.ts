@@ -19,8 +19,20 @@ export interface MemberRow {
   map_url: string | null;
   is_active: boolean;
   display_order: number;
+  priority: 'high' | 'medium' | 'low';
+  level: string | null;
+  is_pinned: boolean;
   created_at: string;
   updated_at: string;
+}
+
+export function sortMembersByPriorityAndPin<T extends Pick<MemberRow, 'priority' | 'is_pinned' | 'created_at'>>(members: T[]) {
+  const priorityRank = { high: 0, medium: 1, low: 2 } as const;
+  return [...members].sort((a, b) =>
+    priorityRank[a.priority] - priorityRank[b.priority] ||
+    Number(b.is_pinned) - Number(a.is_pinned) ||
+    Date.parse(b.created_at) - Date.parse(a.created_at),
+  );
 }
 
 export function slugifyMemberName(value: string) {
@@ -59,6 +71,9 @@ export function toPublicMember(row: MemberRow): Member {
     companyInstagram: row.company_instagram_url,
     officePhone: row.office_phone,
     mapUrl: row.map_url,
+    priority: row.priority,
+    level: row.level,
+    isPinned: row.is_pinned,
   };
 }
 

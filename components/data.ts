@@ -21,6 +21,9 @@ export interface Member {
   companyInstagram?: string | null;
   officePhone?: string | null;
   mapUrl?: string | null;
+  priority?: 'high' | 'medium' | 'low';
+  level?: string | null;
+  isPinned?: boolean;
 }
 
 export interface GalleryItem {

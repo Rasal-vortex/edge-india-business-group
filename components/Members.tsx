@@ -7,7 +7,7 @@ import { useReducedMotion } from 'motion/react';
 import type { Member } from './data';
 import MemberCard from '@/components/members/MemberCard';
 import { createClient } from '@/lib/supabase/client';
-import { toPublicMember, type MemberRow } from '@/lib/members';
+import { sortMembersByPriorityAndPin, toPublicMember, type MemberRow } from '@/lib/members';
 import LiquidLoader from '@/components/ui/LiquidLoader';
 
 type MemberFilter = 'all' | string;
@@ -44,10 +44,9 @@ export default function Members({ members: initialMembers, directory = false, on
           .from('members')
           .select('*')
           .eq('is_active', true)
-          .order('display_order', { ascending: true })
-          .order('name', { ascending: true });
+          .order('created_at', { ascending: false });
         if (error) throw error;
-        if (!cancelled) setMembers((data as MemberRow[]).map(toPublicMember));
+        if (!cancelled) setMembers(sortMembersByPriorityAndPin(data as MemberRow[]).map(toPublicMember));
       } catch {
         if (!cancelled) setLoadError('We could not load the member directory right now. Please try again later.');
       } finally {
