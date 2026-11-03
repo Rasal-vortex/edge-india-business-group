@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, ArrowRight, Search, Users, X } from 'lucide-react';
+import { ArrowLeft, Search, Users, X } from 'lucide-react';
 import { useReducedMotion } from 'motion/react';
 import type { Member } from './data';
 import MemberCard from '@/components/members/MemberCard';
@@ -22,7 +22,7 @@ interface MembersProps {
 
 export default function Members({ members: initialMembers, directory = false, variant = 'core', onSelectMember }: MembersProps) {
   const isCoreSection = !directory && variant === 'core';
-  const limitHomeCommunity = !directory && variant === 'community';
+  const includeInactiveMembers = directory || variant === 'community';
   const sortedInitialMembers = useMemo(
     () => initialMembers
       ? sortPublicMembersByPriorityAndPin(initialMembers.filter((member) =>
@@ -31,9 +31,7 @@ export default function Members({ members: initialMembers, directory = false, va
       : [],
     [initialMembers, isCoreSection],
   );
-  const [members, setMembers] = useState<Member[]>(() =>
-    limitHomeCommunity ? sortedInitialMembers.slice(0, 8) : sortedInitialMembers,
-  );
+  const [members, setMembers] = useState<Member[]>(sortedInitialMembers);
   const [chapters, setChapters] = useState<ChapterOption[]>([]);
   const [memberCount, setMemberCount] = useState(sortedInitialMembers.length);
   const [loading, setLoading] = useState(initialMembers === undefined);
@@ -53,26 +51,24 @@ export default function Members({ members: initialMembers, directory = false, va
       setLoadError('');
       try {
         const supabase = createClient();
-        const priorities = ['high', 'medium', 'low'] as const;
-        const memberResultsPromise = Promise.all(priorities.map(async (priority) => {
-          let query = supabase
+        let memberQuery = supabase
             .from('members')
             .select('*', { count: 'exact' })
-            .eq('is_active', true)
             .eq('is_inside_core_member', isCoreSection)
-            .eq('priority', priority);
-
-          if (directory && activeFilter !== 'all') {
-            query = query.eq('chapter_id', activeFilter);
-          }
-
-          const orderedQuery = query
+            .order('is_active', { ascending: false })
             .order('is_pinned', { ascending: false })
             .order('created_at', { ascending: false })
             .order('id', { ascending: true });
 
-          return limitHomeCommunity ? orderedQuery.limit(8) : orderedQuery;
-        }));
+        if (!includeInactiveMembers) {
+          memberQuery = memberQuery.eq('is_active', true);
+        }
+
+        if (directory && activeFilter !== 'all') {
+          memberQuery = memberQuery.eq('chapter_id', activeFilter);
+        }
+
+        const memberResultsPromise = memberQuery;
 
         const chaptersPromise = directory
           ? supabase
@@ -86,16 +82,15 @@ export default function Members({ members: initialMembers, directory = false, va
           chaptersPromise,
         ]);
 
-        const failedResult = results.find(({ error }) => error);
-        if (failedResult?.error) throw failedResult.error;
+        if (results.error) throw results.error;
         if (chapterResult?.error) throw chapterResult.error;
 
-        const totalCount = results.reduce((total, result) => total + (result.count ?? 0), 0);
-        const rows = results.flatMap((result) => (result.data ?? []) as MemberRow[]);
+        const rows = (results.data ?? []) as MemberRow[];
+        const sortedMembers = sortPublicMembersByPriorityAndPin(rows.map(toPublicMember));
         if (!cancelled) {
           if (chapterResult) setChapters((chapterResult.data ?? []) as ChapterOption[]);
-          setMemberCount(totalCount);
-          setMembers(rows.map(toPublicMember));
+          setMemberCount(results.count ?? rows.length);
+          setMembers(sortedMembers);
         }
       } catch {
         if (!cancelled) setLoadError('We could not load the member directory right now. Please try again later.');
@@ -106,7 +101,7 @@ export default function Members({ members: initialMembers, directory = false, va
 
     void loadMembers();
     return () => { cancelled = true; };
-  }, [activeFilter, directory, initialMembers, isCoreSection, limitHomeCommunity]);
+  }, [activeFilter, directory, initialMembers, isCoreSection, includeInactiveMembers]);
 
   const sectionMembers = useMemo(() => {
     if (initialMembers === undefined) return members;
@@ -122,7 +117,7 @@ export default function Members({ members: initialMembers, directory = false, va
     return matchesSearch;
   }), [sectionMembers, normalizedQuery]);
 
-  const displayedMembers = directory ? filteredMembers : variant === 'community' ? filteredMembers.slice(0, 8) : filteredMembers;
+  const displayedMembers = filteredMembers;
 
   return (
     <section id={directory || variant === 'core' ? 'members' : 'community'} className={`w-full border-b border-slate-200 py-16 lg:py-24 ${variant === 'community' && !directory ? 'bg-[#eff4ff]' : 'bg-white'}`}>
@@ -305,14 +300,6 @@ export default function Members({ members: initialMembers, directory = false, va
               </div>
             )}
 
-            {!directory && variant === 'community' ? (
-              <div className="mt-9 flex justify-center">
-                <Link href="/members" className="inline-flex min-h-12 items-center justify-center rounded-lg bg-[#12358f] px-7 py-3 text-sm font-extrabold text-white shadow-sm transition-colors hover:bg-[#002069] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bb0013]">
-                  View more members <ArrowRight aria-hidden="true" className="ml-2 h-4 w-4" />
-                </Link>
-              </div>
-            ) : null}
-
           </>
         )}
 
@@ -320,3 +307,4 @@ export default function Members({ members: initialMembers, directory = false, va
     </section>
   );
 }
+
