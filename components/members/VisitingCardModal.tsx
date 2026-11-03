@@ -392,7 +392,7 @@ export default function VisitingCardModal({
                       </div>
                       <div className="relative flex h-full min-w-0 flex-col items-center justify-center before:absolute before:bottom-[20%] before:left-0 before:top-[20%] before:w-px before:bg-[#d3dced]">
                         <span className="flex h-[28%] items-center text-[2cqi] font-semibold italic text-[#102b61]">
-                          Digital Partner
+                          Technology Partner
                         </span>
                         <div className="relative aspect-[4.2/1] w-[78%] overflow-hidden">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
