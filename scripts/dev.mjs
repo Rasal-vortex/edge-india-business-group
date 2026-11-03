@@ -14,17 +14,30 @@ if (!Number.isInteger(configuredPort) || configuredPort < 1 || configuredPort > 
   process.exit(1);
 }
 
-function isPortAvailable(port) {
+function canBind(port, host) {
   return new Promise((resolveAvailability, reject) => {
     const server = createServer();
     server.once('error', (error) => {
-      if (error.code === 'EADDRINUSE') resolveAvailability(false);
+      // Windows can report EACCES when a port is reserved by the OS instead
+      // of returning EADDRINUSE. Treat either case as unavailable and try next.
+      if (error.code === 'EADDRINUSE' || error.code === 'EACCES') resolveAvailability(false);
+      // IPv6 may be disabled on a host. In that case, the IPv4 probe is enough.
+      else if (host === '::' && ['EAFNOSUPPORT', 'EINVAL'].includes(error.code)) resolveAvailability(true);
       else reject(error);
     });
-    server.listen({ host: '127.0.0.1', port, exclusive: true }, () => {
+    server.listen({ host, port, exclusive: true }, () => {
       server.close((error) => error ? reject(error) : resolveAvailability(true));
     });
   });
+}
+
+async function isPortAvailable(port) {
+  // Next binds to the IPv6 wildcard (::) by default. Check it as well as IPv4
+  // so an IPv6-only listener cannot make Next fail after this probe succeeds.
+  for (const host of ['127.0.0.1', '::']) {
+    if (!(await canBind(port, host))) return false;
+  }
+  return true;
 }
 
 let port = configuredPort;
@@ -36,7 +49,7 @@ if (port > 65535) {
 }
 
 if (port !== configuredPort) {
-  console.log(`Port ${configuredPort} is already in use; using ${port}.`);
+  console.log(`Port ${configuredPort} is unavailable; using ${port}.`);
 }
 
 const require = createRequire(import.meta.url);

@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import ChatbotWidget from '@/components/ChatbotWidget';
-import ConnectModal from '@/components/ConnectModal';
-import Members from '@/components/Members';
-import Navbar from '@/components/Navbar';
+import { useState } from "react";
+import ChatbotWidget from "@/components/ChatbotWidget";
+import ConnectModal from "@/components/ConnectModal";
+import Members from "@/components/Members";
+import Navbar from "@/components/Navbar";
 
 export default function MembersDirectoryPage() {
-  const [connectContext, setConnectContext] = useState('');
+  const [connectContext, setConnectContext] = useState("");
   const [isConnectOpen, setIsConnectOpen] = useState(false);
 
   const openConnect = (context: string) => {
@@ -16,11 +16,13 @@ export default function MembersDirectoryPage() {
   };
 
   const navigateToSection = (sectionId: string) => {
-    if (sectionId === 'members') {
-      document.getElementById('members')?.scrollIntoView({ behavior: 'smooth' });
+    if (sectionId === "members") {
+      document
+        .getElementById("members")
+        ?.scrollIntoView({ behavior: "smooth" });
       return;
     }
-    window.location.assign(sectionId === 'home' ? '/' : `/#${sectionId}`);
+    window.location.assign(sectionId === "home" ? "/" : `/#${sectionId}`);
   };
 
   return (
@@ -29,12 +31,14 @@ export default function MembersDirectoryPage() {
         activeSection="members"
         forceGlass
         onNavigate={navigateToSection}
-        onOpenConnect={() => openConnect('Contact the Manjeri chapter')}
+        onOpenConnect={() => openConnect("Contact the Manjeri chapter")}
       />
       <main className="w-full pt-24">
         <Members
           directory
-          onSelectMember={(member) => window.location.assign(`/members/${member.username}`)}
+          onSelectMember={(member) =>
+            window.location.assign(`/members/${member.username}`)
+          }
         />
       </main>
 

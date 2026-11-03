@@ -23,7 +23,9 @@ export interface Member {
   mapUrl?: string | null;
   priority?: 'high' | 'medium' | 'low';
   level?: string | null;
+  isInsideCoreMember?: boolean;
   isPinned?: boolean;
+  createdAt?: string;
 }
 
 export interface GalleryItem {

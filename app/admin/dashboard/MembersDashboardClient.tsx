@@ -57,6 +57,7 @@ export interface AdminMember {
   priority: "high" | "medium" | "low";
   level: string | null;
   is_pinned: boolean;
+  is_inside_core_member: boolean;
   created_at: string;
 }
 export type MemberFormValues = Omit<
@@ -85,6 +86,7 @@ export const fromRow = (row: MemberRow): AdminMember => ({
   priority: row.priority,
   level: row.level,
   is_pinned: row.is_pinned,
+  is_inside_core_member: row.is_inside_core_member,
   created_at: row.created_at,
 });
 export const photoPath = (url: string | null) => {
@@ -253,6 +255,7 @@ export function MemberFormPage({
           is_active: member?.is_active ?? true,
           display_order: member?.display_order ?? 0,
           level: optionalValue(data.get("level")),
+          is_inside_core_member: data.get("is_inside_core_member") === "true",
         },
         imageMode === "upload" ? selectedFile : undefined,
         companyLogoFile,
@@ -482,6 +485,20 @@ export function MemberFormPage({
                     className={inputClass}
                     placeholder="Optional level"
                   />
+                </div>
+                <div>
+                  <label className={labelClass} htmlFor="member-is-inside-core-member">
+                    Inside Core Member
+                  </label>
+                  <select
+                    id="member-is-inside-core-member"
+                    name="is_inside_core_member"
+                    defaultValue={member?.is_inside_core_member ? "true" : "false"}
+                    className={inputClass}
+                  >
+                    <option value="true">Yes</option>
+                    <option value="false">No</option>
+                  </select>
                 </div>
                 <div>
                   <label className={labelClass} htmlFor="member-designation">
@@ -1162,9 +1179,9 @@ export default function AdminMembersDashboard({
                           <td className="px-5 py-3.5">
                             <div className="flex justify-end gap-1">
                               <Link
-                                href={`/members/${member.username}`}
-                                aria-label={`View ${member.name}`}
-                                title="View profile"
+                                href={`/admin/dashboard/members/${member.id}`}
+                                aria-label={`View ${member.name} details`}
+                                title="View member details"
                                 className="flex h-8 w-8 items-center justify-center rounded text-slate-400 transition hover:bg-blue-50 hover:text-[#12358f] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#12358f]"
                               >
                                 <Eye
@@ -1225,9 +1242,9 @@ export default function AdminMembersDashboard({
                           </div>
                           <div className="flex shrink-0 gap-1">
                             <Link
-                              href={`/members/${member.username}`}
-                              aria-label={`View ${member.name}`}
-                              title="View profile"
+                              href={`/admin/dashboard/members/${member.id}`}
+                              aria-label={`View ${member.name} details`}
+                              title="View member details"
                               className="flex h-8 w-8 items-center justify-center rounded text-slate-400 hover:bg-blue-50 hover:text-[#12358f]"
                             >
                               <Eye aria-hidden="true" className="h-3.5 w-3.5" />

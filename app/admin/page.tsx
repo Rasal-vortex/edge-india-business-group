@@ -114,6 +114,37 @@ export default function AdminSignInPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [notice, setNotice] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const redirectIfAdmin = async () => {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data: admin } = await supabase
+          .from('admin_users')
+          .select('user_id')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        if (admin && !cancelled) {
+          router.replace('/admin/dashboard');
+          router.refresh();
+        }
+      } catch {
+        // If session lookup is unavailable, leave the sign-in form usable.
+      } finally {
+        if (!cancelled) setIsCheckingAuth(false);
+      }
+    };
+
+    void redirectIfAdmin();
+    return () => { cancelled = true; };
+  }, [router]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -148,6 +179,10 @@ export default function AdminSignInPage() {
       setIsSubmitting(false);
     }
   };
+
+  if (isCheckingAuth) {
+    return <main className="flex min-h-screen items-center justify-center bg-[#f3f5fa] text-sm font-semibold text-[#526582]">Checking administrator session…</main>;
+  }
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#f3f5fa] px-4 py-8 text-[#0b1c30] sm:px-8 lg:py-12">

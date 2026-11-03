@@ -2,12 +2,13 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { ArrowLeft, ArrowUpRight, Search, Users, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Search, Users, X } from 'lucide-react';
 import { useReducedMotion } from 'motion/react';
 import type { Member } from './data';
 import MemberCard from '@/components/members/MemberCard';
+import CommunityMemberCard from '@/components/members/CommunityMemberCard';
 import { createClient } from '@/lib/supabase/client';
-import { sortMembersByPriorityAndPin, toPublicMember, type MemberRow } from '@/lib/members';
+import { sortPublicMembersByPriorityAndPin, toPublicMember, type MemberRow } from '@/lib/members';
 import LiquidLoader from '@/components/ui/LiquidLoader';
 
 type MemberFilter = 'all' | string;
@@ -15,21 +16,31 @@ type MemberFilter = 'all' | string;
 interface MembersProps {
   members?: Member[];
   directory?: boolean;
+  variant?: 'core' | 'community';
   onSelectMember: (member: Member) => void;
 }
 
-export default function Members({ members: initialMembers, directory = false, onSelectMember }: MembersProps) {
+export default function Members({ members: initialMembers, directory = false, variant = 'core', onSelectMember }: MembersProps) {
   const [members, setMembers] = useState<Member[]>(initialMembers ?? []);
+  const [memberCount, setMemberCount] = useState(initialMembers?.length ?? 0);
   const [loading, setLoading] = useState(initialMembers === undefined);
   const [loadError, setLoadError] = useState('');
   const [activeFilter, setActiveFilter] = useState<MemberFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [pauseCarousel, setPauseCarousel] = useState(false);
   const reduceMotion = useReducedMotion();
   const normalizedQuery = searchQuery.trim().toLocaleLowerCase();
+  const isCoreSection = !directory && variant === 'core';
+  const limitHomeCommunity = !directory && variant === 'community';
 
   useEffect(() => {
     if (initialMembers !== undefined) {
-      setMembers(initialMembers);
+      const sectionMembers = initialMembers.filter((member) =>
+        Boolean(member.isInsideCoreMember) === isCoreSection,
+      );
+      const sortedMembers = sortPublicMembersByPriorityAndPin(sectionMembers);
+      setMemberCount(sortedMembers.length);
+      setMembers(limitHomeCommunity ? sortedMembers.slice(0, 8) : sortedMembers);
       setLoading(false);
       return;
     }
@@ -40,13 +51,30 @@ export default function Members({ members: initialMembers, directory = false, on
       setLoadError('');
       try {
         const supabase = createClient();
-        const { data, error } = await supabase
-          .from('members')
-          .select('*')
-          .eq('is_active', true)
-          .order('created_at', { ascending: false });
-        if (error) throw error;
-        if (!cancelled) setMembers(sortMembersByPriorityAndPin(data as MemberRow[]).map(toPublicMember));
+        const priorities = ['high', 'medium', 'low'] as const;
+        const results = await Promise.all(priorities.map(async (priority) => {
+          const query = supabase
+            .from('members')
+            .select('*', { count: 'exact' })
+            .eq('is_active', true)
+            .eq('is_inside_core_member', isCoreSection)
+            .eq('priority', priority)
+            .order('is_pinned', { ascending: false })
+            .order('created_at', { ascending: false })
+            .order('id', { ascending: true });
+
+          return limitHomeCommunity ? query.limit(8) : query;
+        }));
+
+        const failedResult = results.find(({ error }) => error);
+        if (failedResult?.error) throw failedResult.error;
+
+        const totalCount = results.reduce((total, result) => total + (result.count ?? 0), 0);
+        const rows = results.flatMap((result) => (result.data ?? []) as MemberRow[]);
+        if (!cancelled) {
+          setMemberCount(totalCount);
+          setMembers(rows.map(toPublicMember));
+        }
       } catch {
         if (!cancelled) setLoadError('We could not load the member directory right now. Please try again later.');
       } finally {
@@ -56,28 +84,28 @@ export default function Members({ members: initialMembers, directory = false, on
 
     void loadMembers();
     return () => { cancelled = true; };
-  }, [initialMembers]);
+  }, [directory, initialMembers, isCoreSection, limitHomeCommunity]);
 
-  const categoryFilters = useMemo(() => Array.from(new Set(members.flatMap((member) => member.categories)))
+  const sectionMembers = useMemo(() => {
+    return members;
+  }, [members]);
+
+  const categoryFilters = useMemo(() => Array.from(new Set(sectionMembers.flatMap((member) => member.categories)))
     .filter(Boolean)
-    .map((category) => ({ id: category, label: category })), [members]);
+    .map((category) => ({ id: category, label: category })), [sectionMembers]);
 
-  const filteredMembers = useMemo(() => members.filter((member) => {
+  const filteredMembers = useMemo(() => sectionMembers.filter((member) => {
     const matchesCategory = activeFilter === 'all' || member.categories.includes(activeFilter);
     const matchesSearch = !normalizedQuery ||
       member.name.toLocaleLowerCase().includes(normalizedQuery) ||
       (member.company ?? '').toLocaleLowerCase().includes(normalizedQuery);
     return matchesCategory && matchesSearch;
-  }), [activeFilter, members, normalizedQuery]);
+  }), [activeFilter, sectionMembers, normalizedQuery]);
 
-  const hasActiveSearchOrFilter = normalizedQuery.length > 0 || activeFilter !== 'all';
-  const displayedMembers = directory || hasActiveSearchOrFilter
-    ? filteredMembers
-    : filteredMembers.slice(0, 8);
-  const hasMoreMembers = filteredMembers.length > 8;
+  const displayedMembers = directory ? filteredMembers : variant === 'community' ? filteredMembers.slice(0, 8) : filteredMembers;
 
   return (
-    <section id="members" className="w-full border-b border-slate-200 bg-white py-16 lg:py-24">
+    <section id={directory || variant === 'core' ? 'members' : 'community'} className={`w-full border-b border-slate-200 py-16 lg:py-24 ${variant === 'community' && !directory ? 'bg-[#eff4ff]' : 'bg-white'}`}>
       <div className="mx-auto max-w-[1280px] px-4 md:px-8 lg:px-12">
         {directory ? (
           <Link
@@ -98,12 +126,15 @@ export default function Members({ members: initialMembers, directory = false, on
               </span>
             </div>
             <h2 className="text-3xl font-extrabold tracking-tight text-[#0b1c30] sm:text-4xl lg:text-[40px]">
-              Meet the people behind Edge India Business Group
+              {directory || variant === 'community' ? 'Meet Our Members Across All Chapters' : 'Meet the Core Team'}
             </h2>
-          
+            {!directory ? (
+              <span className="mt-2 inline-flex items-center gap-2 rounded-full border border-[#bb0013]/20 bg-[#fff4f3] px-4 py-1.5 text-xs font-extrabold uppercase tracking-[0.16em] text-[#a40011]">
+                <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-[#bb0013]" />
+                {variant === 'core' ? 'Core team' : 'Our members'}
+              </span>
+            ) : null}
           </div>
-
-
         </div>
 
         {directory ? <div className="mb-6 flex flex-col items-center gap-4">
@@ -162,7 +193,7 @@ export default function Members({ members: initialMembers, directory = false, on
           <div className="rounded-xl border border-rose-200 bg-rose-50 py-12 text-center" role="alert">
             <p className="text-sm font-semibold text-rose-800">{loadError}</p>
           </div>
-        ) : members.length === 0 ? (
+        ) : sectionMembers.length === 0 ? (
           <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 py-16 text-center">
             <Users aria-hidden="true" className="mx-auto mb-2 h-8 w-8 text-slate-400" />
             <p className="text-sm font-semibold text-slate-700">Member profiles are being added.</p>
@@ -186,37 +217,82 @@ export default function Members({ members: initialMembers, directory = false, on
           </div>
         ) : (
           <>
-            <div className="mb-4 flex justify-center gap-4 text-center text-xs text-slate-500">
-              <p aria-live="polite">
-                {hasActiveSearchOrFilter || directory
-                  ? `${filteredMembers.length} ${filteredMembers.length === 1 ? 'member' : 'members'}`
-                  : `Showing ${displayedMembers.length} of ${filteredMembers.length} members`}
-              </p>
-            </div>
+            {directory || variant === 'community' ? (
+              <>
+                <div className="mb-4 flex justify-center text-center text-xs text-slate-500">
+                  <p aria-live="polite">
+                    {directory ? filteredMembers.length : memberCount} {(directory ? filteredMembers.length : memberCount) === 1 ? 'member' : 'members'}
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 items-stretch gap-5 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
+                  {displayedMembers.map((member, index) => (
+                    <CommunityMemberCard
+                      key={member.id}
+                      member={member}
+                      index={index}
+                      reduceMotion={reduceMotion}
+                      onSelect={onSelectMember}
+                    />
+                  ))}
+                </div>
+              </>
+            ) : (
+              <div
+                className={`member-marquee ${displayedMembers.length < 4 ? 'member-marquee-static' : ''}`}
+                role="region"
+                aria-label="Scrolling member profiles"
+                onMouseEnter={() => setPauseCarousel(true)}
+                onMouseLeave={() => setPauseCarousel(false)}
+                onFocusCapture={() => setPauseCarousel(true)}
+                onBlurCapture={(event) => {
+                  if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+                    setPauseCarousel(false);
+                  }
+                }}
+              >
+                {displayedMembers.length < 4 ? (
+                  <div className="member-marquee-group">
+                    {displayedMembers.map((member, index) => (
+                      <div className="member-marquee-card" key={member.id}>
+                        <MemberCard member={member} index={index} reduceMotion={reduceMotion} onSelect={onSelectMember} />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div
+                    className="member-marquee-track"
+                    style={{
+                      animationDuration: `${Math.max(24, displayedMembers.length * 3.25)}s`,
+                      animationPlayState: pauseCarousel || reduceMotion === true ? 'paused' : 'running',
+                    }}
+                  >
+                    <div className="member-marquee-group">
+                      {displayedMembers.map((member, index) => (
+                        <div className="member-marquee-card" key={member.id}>
+                          <MemberCard member={member} index={index} reduceMotion={reduceMotion} onSelect={onSelectMember} />
+                        </div>
+                      ))}
+                    </div>
+                    <div className="member-marquee-group" aria-hidden="true" inert>
+                      {displayedMembers.map((member, index) => (
+                        <div className="member-marquee-card" key={`copy-${member.id}`}>
+                          <MemberCard member={member} index={index} reduceMotion={reduceMotion} onSelect={onSelectMember} />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
-            <div className="grid grid-cols-1 items-stretch gap-5 sm:grid-cols-2 lg:grid-cols-4 lg:gap-6">
-              {displayedMembers.map((member, index) => (
-                <MemberCard
-                  key={member.id}
-                  member={member}
-                  index={index}
-                  reduceMotion={reduceMotion}
-                  onSelect={onSelectMember}
-                />
-              ))}
-            </div>
-
-            {hasMoreMembers && !hasActiveSearchOrFilter && !directory ? (
-              <div className="mt-8 flex justify-center">
-                <Link
-                  href="/members"
-                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded border border-[#12358f] bg-white px-6 py-3 text-sm font-bold text-[#12358f] shadow-sm transition-colors hover:bg-[#12358f] hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bb0013]"
-                >
-                  View All Members
-                  <ArrowUpRight aria-hidden="true" className="h-4 w-4" />
+            {!directory && variant === 'community' ? (
+              <div className="mt-9 flex justify-center">
+                <Link href="/members" className="inline-flex min-h-12 items-center justify-center rounded-lg bg-[#12358f] px-7 py-3 text-sm font-extrabold text-white shadow-sm transition-colors hover:bg-[#002069] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bb0013]">
+                  View more members <ArrowRight aria-hidden="true" className="ml-2 h-4 w-4" />
                 </Link>
               </div>
             ) : null}
+
           </>
         )}
 

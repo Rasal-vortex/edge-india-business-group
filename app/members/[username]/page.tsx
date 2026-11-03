@@ -7,10 +7,12 @@ import {
   Instagram,
   Mail,
   MapPin,
+  Pencil,
   Phone,
   Smartphone,
 } from "lucide-react";
 import Link from "next/link";
+import VisitingCardModal from "@/components/members/VisitingCardModal";
 import { createClient } from "@/lib/supabase/server";
 import {
   slugifyMemberName,
@@ -116,20 +118,54 @@ export default async function MemberProfilePage({
   }
   if (!data) notFound();
 
+  const map = mapDetails((data as MemberRow).map_url);
   const member = toPublicMember(data as MemberRow);
-  const map = mapDetails(member.mapUrl);
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const userId = claimsData?.claims?.sub;
+  let canEditMember = false;
+  if (userId) {
+    const { data: admin } = await supabase
+      .from("admin_users")
+      .select("user_id")
+      .eq("user_id", userId)
+      .maybeSingle();
+    canEditMember = Boolean(admin);
+  }
+
   const personalInstagram = instagramHref(member.personalInstagram);
   const companyInstagram = instagramHref(member.companyInstagram);
 
   return (
     <main className="min-h-screen bg-[#f8f9ff] text-[#0b1c30]">
       <div className="mx-auto flex min-h-screen w-full max-w-[1280px] flex-col px-4 py-6 md:px-8 lg:px-12 lg:py-10">
-        <Link
-          href="/members"
-          className="mb-6 inline-flex min-h-10 w-fit items-center gap-2 rounded border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-[#12358f] shadow-sm transition-colors hover:border-[#12358f] hover:bg-[#f8f9ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#12358f]"
-        >
-          <ArrowLeft aria-hidden="true" className="h-4 w-4" /> Members directory
-        </Link>
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+          <Link
+            href="/members"
+            className="inline-flex min-h-10 w-fit items-center gap-2 rounded border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-[#12358f] shadow-sm transition-colors hover:border-[#12358f] hover:bg-[#f8f9ff] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#12358f]"
+          >
+            <ArrowLeft aria-hidden="true" className="h-4 w-4" /> Members
+            directory
+          </Link>
+          <VisitingCardModal
+            member={{
+              username: member.username,
+              name: member.name,
+              designation: member.role,
+              phone: member.phone,
+              email: member.email,
+              personalInstagram: member.personalInstagram,
+              image: member.image,
+            }}
+          />
+          {canEditMember ? (
+            <Link
+              href={`/admin/dashboard/members/${data.id}/edit`}
+              className="inline-flex min-h-10 items-center gap-2 rounded bg-[#12358f] px-4 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#002069] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#bb0013]"
+            >
+              <Pencil aria-hidden="true" className="h-4 w-4" /> Edit member
+            </Link>
+          ) : null}
+        </div>
 
         <section
           aria-labelledby="member-company-name"
@@ -141,7 +177,7 @@ export default async function MemberProfilePage({
               className="h-1 w-2.5 rounded-full bg-[#bb0013]"
             />
             <span className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#002069]">
-              Member profile
+              Basic information
             </span>
           </div>
           <div className="mb-7 flex min-h-16 items-center">
@@ -163,6 +199,18 @@ export default async function MemberProfilePage({
           >
             {member.company || "Company profile"}
           </h1>
+          <p className="mt-2 text-sm text-slate-500">
+            Username:{" "}
+            <span className="font-semibold text-slate-700">
+              {member.username}
+            </span>
+          </p>
+          <Link
+            href={`/members/${member.username}`}
+            className="mt-1 inline-block text-sm font-bold text-[#12358f] hover:underline"
+          >
+            Profile link: /members/{member.username}
+          </Link>
 
           <div className="mt-8 grid gap-6 rounded-xl border border-slate-200 bg-[#f8f9ff] p-4 sm:grid-cols-[180px_1fr] sm:items-center sm:p-6">
             <div className="flex h-44 w-44 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-[#eff4ff]">
@@ -190,36 +238,101 @@ export default async function MemberProfilePage({
               <h2 className="mt-2 text-2xl font-extrabold tracking-tight text-[#0b1c30] sm:text-3xl">
                 {member.name}
               </h2>
-              <p className="mt-1 text-base font-semibold text-slate-600">
-                {member.role}
-              </p>
-              {member.description ? (
-                <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-600 sm:text-base">
-                  {member.description}
-                </p>
-              ) : null}
-              <div
-                className="mt-5 flex flex-wrap gap-2"
-                aria-label="Member details"
-              >
-                {member.categories.map((category) => (
-                  <span
-                    key={category}
-                    className="rounded-full border border-[#dce5f2] bg-white px-3 py-1 text-xs font-bold text-[#1646ad]"
-                  >
-                    {category}
-                  </span>
-                ))}
-                {member.level ? (
-                  <span className="rounded-full border border-[#dce5f2] bg-white px-3 py-1 text-xs font-bold text-[#1646ad]">
-                    Level: {member.level}
-                  </span>
-                ) : null}
-              </div>
             </div>
           </div>
+        </section>
 
-          <div className="mt-8 grid gap-3 sm:grid-cols-2">
+        <section
+          aria-labelledby="professional-details-title"
+          className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8 lg:p-10"
+        >
+          <div className="inline-flex items-center gap-2">
+            <span
+              aria-hidden="true"
+              className="h-1 w-2.5 rounded-full bg-[#bb0013]"
+            />
+            <span className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#002069]">
+              Work profile
+            </span>
+          </div>
+          <h2
+            id="professional-details-title"
+            className="mt-2 text-2xl font-extrabold tracking-tight text-[#002069]"
+          >
+            Professional details
+          </h2>
+          <dl className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="rounded-lg border border-slate-200 bg-[#f8f9ff] p-4">
+              <dt className="text-[11px] font-bold uppercase tracking-wide text-slate-500">
+                Priority
+              </dt>
+              <dd className="mt-1 text-sm font-semibold capitalize text-slate-800">
+                {member.priority ?? "medium"}
+              </dd>
+            </div>
+            <div className="rounded-lg border border-slate-200 bg-[#f8f9ff] p-4">
+              <dt className="text-[11px] font-bold uppercase tracking-wide text-slate-500">
+                Level
+              </dt>
+              <dd className="mt-1 text-sm font-semibold text-slate-800">
+                {member.level || "Not provided"}
+              </dd>
+            </div>
+            <div className="rounded-lg border border-slate-200 bg-[#f8f9ff] p-4">
+              <dt className="text-[11px] font-bold uppercase tracking-wide text-slate-500">
+                Inside Core Member
+              </dt>
+              <dd className="mt-1 text-sm font-semibold text-slate-800">
+                {member.isInsideCoreMember ? "Yes" : "No"}
+              </dd>
+            </div>
+            <div className="rounded-lg border border-slate-200 bg-[#f8f9ff] p-4">
+              <dt className="text-[11px] font-bold uppercase tracking-wide text-slate-500">
+                Designation
+              </dt>
+              <dd className="mt-1 text-sm font-semibold text-slate-800">
+                {member.role || "Not provided"}
+              </dd>
+            </div>
+            <div className="rounded-lg border border-slate-200 bg-[#f8f9ff] p-4 sm:col-span-2">
+              <dt className="text-[11px] font-bold uppercase tracking-wide text-slate-500">
+                Category
+              </dt>
+              <dd className="mt-1 text-sm font-semibold text-slate-800">
+                {member.categories.join(", ") || "Not provided"}
+              </dd>
+            </div>
+            <div className="rounded-lg border border-slate-200 bg-[#f8f9ff] p-4 sm:col-span-2 lg:col-span-3">
+              <dt className="text-[11px] font-bold uppercase tracking-wide text-slate-500">
+                Short bio
+              </dt>
+              <dd className="mt-1 whitespace-pre-line text-sm leading-6 text-slate-700">
+                {member.description || "Not provided"}
+              </dd>
+            </div>
+          </dl>
+        </section>
+
+        <section
+          aria-labelledby="contact-information-title"
+          className="mt-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8 lg:p-10"
+        >
+          <div className="inline-flex items-center gap-2">
+            <span
+              aria-hidden="true"
+              className="h-1 w-2.5 rounded-full bg-[#bb0013]"
+            />
+            <span className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#002069]">
+              Personal contact
+            </span>
+          </div>
+          <h2
+            id="contact-information-title"
+            className="mt-2 text-2xl font-extrabold tracking-tight text-[#002069]"
+          >
+            Contact information
+          </h2>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
             {member.phone ? (
               <a
                 href={`tel:${member.phone}`}

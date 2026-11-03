@@ -22,17 +22,31 @@ export interface MemberRow {
   priority: 'high' | 'medium' | 'low';
   level: string | null;
   is_pinned: boolean;
+  is_inside_core_member: boolean;
   created_at: string;
   updated_at: string;
 }
 
-export function sortMembersByPriorityAndPin<T extends Pick<MemberRow, 'priority' | 'is_pinned' | 'created_at'>>(members: T[]) {
+type MemberOrderFields = {
+  id: string;
+  priority?: 'high' | 'medium' | 'low';
+  pinned: boolean;
+  createdAt?: string;
+};
+
+function compareMemberOrder(a: MemberOrderFields, b: MemberOrderFields) {
   const priorityRank = { high: 0, medium: 1, low: 2 } as const;
-  return [...members].sort((a, b) =>
-    priorityRank[a.priority] - priorityRank[b.priority] ||
-    Number(b.is_pinned) - Number(a.is_pinned) ||
-    Date.parse(b.created_at) - Date.parse(a.created_at),
-  );
+  return priorityRank[a.priority ?? 'medium'] - priorityRank[b.priority ?? 'medium'] ||
+    Number(b.pinned) - Number(a.pinned) ||
+    (Date.parse(b.createdAt ?? '') || 0) - (Date.parse(a.createdAt ?? '') || 0) ||
+    a.id.localeCompare(b.id);
+}
+
+export function sortMembersByPriorityAndPin<T extends Pick<MemberRow, 'id' | 'priority' | 'is_pinned' | 'created_at'>>(members: T[]) {
+  return [...members].sort((a, b) => compareMemberOrder(
+    { id: a.id, priority: a.priority, pinned: a.is_pinned, createdAt: a.created_at },
+    { id: b.id, priority: b.priority, pinned: b.is_pinned, createdAt: b.created_at },
+  ));
 }
 
 export function slugifyMemberName(value: string) {
@@ -74,7 +88,16 @@ export function toPublicMember(row: MemberRow): Member {
     priority: row.priority,
     level: row.level,
     isPinned: row.is_pinned,
+    isInsideCoreMember: row.is_inside_core_member,
+    createdAt: row.created_at,
   };
+}
+
+export function sortPublicMembersByPriorityAndPin<T extends Pick<Member, 'id' | 'priority' | 'isPinned' | 'createdAt'>>(members: T[]) {
+  return [...members].sort((a, b) => compareMemberOrder(
+    { id: a.id, priority: a.priority, pinned: Boolean(a.isPinned), createdAt: a.createdAt },
+    { id: b.id, priority: b.priority, pinned: Boolean(b.isPinned), createdAt: b.createdAt },
+  ));
 }
 
 export function isMemberPhotoUrl(imageUrl: string | null | undefined) {

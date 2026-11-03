@@ -94,6 +94,7 @@ export default function MemberFormRouteClient({
         is_active: values.is_active,
         display_order: values.display_order,
         level: values.level,
+        is_inside_core_member: values.is_inside_core_member,
       };
       const request = member
         ? supabase.from('members').update(payload).eq('id', member.id).select('*').single()

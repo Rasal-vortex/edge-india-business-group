@@ -117,6 +117,11 @@ export default function HomePage() {
           onSelectMember={handleMemberSelect}
         />
 
+        <Members
+          variant="community"
+          onSelectMember={handleMemberSelect}
+        />
+
         {/* 4. Moments / Gallery Section */}
         <Gallery />
 
