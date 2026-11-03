@@ -24,6 +24,7 @@ export interface Member {
   mapUrl?: string | null;
   priority?: 'high' | 'medium' | 'low';
   level?: string | null;
+  isActive?: boolean;
   isInsideCoreMember?: boolean;
   isPinned?: boolean;
   createdAt?: string;
@@ -114,3 +115,4 @@ export const BRAND_ASSETS = {
   logo: '/compony-logos/edege-india-logo-png-file.png',
   aboutConference: '/1.png',
 };
+
