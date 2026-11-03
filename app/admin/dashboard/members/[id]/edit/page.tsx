@@ -1,6 +1,6 @@
 import { notFound, redirect } from 'next/navigation';
 import MemberFormRouteClient from '../../MemberFormRouteClient';
-import type { MemberRow } from '@/lib/members';
+import type { ChapterOption, MemberRow } from '@/lib/members';
 import { createClient } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
@@ -19,9 +19,10 @@ export default async function AdminEditMemberPage({ params }: { params: Promise<
     .maybeSingle();
   if (adminError || !admin) redirect('/admin');
 
-  const [{ data: member, error: memberError }, { data: rows }] = await Promise.all([
+  const [{ data: member, error: memberError }, { data: rows }, { data: chapters }] = await Promise.all([
     supabase.from('members').select('*').eq('id', id).maybeSingle(),
     supabase.from('members').select('designation,category'),
+    supabase.from('chapters').select('id,name,is_active').order('name'),
   ]);
   if (memberError || !member) notFound();
 
@@ -29,5 +30,5 @@ export default async function AdminEditMemberPage({ params }: { params: Promise<
   const designationOptions = [...new Set(options.map((row) => row.designation).filter((value): value is string => Boolean(value)))].sort();
   const categoryOptions = [...new Set(options.map((row) => row.category).filter((value): value is string => Boolean(value)))].sort();
 
-  return <MemberFormRouteClient initialMember={member as MemberRow} designationOptions={designationOptions} categoryOptions={categoryOptions} />;
+  return <MemberFormRouteClient initialMember={member as MemberRow} designationOptions={designationOptions} categoryOptions={categoryOptions} chapterOptions={(chapters ?? []) as ChapterOption[]} />;
 }

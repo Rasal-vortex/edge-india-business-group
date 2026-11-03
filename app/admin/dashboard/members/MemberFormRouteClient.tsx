@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import imageCompression from 'browser-image-compression';
 import { createClient } from '@/lib/supabase/client';
-import type { MemberRow } from '@/lib/members';
+import type { ChapterOption, MemberRow } from '@/lib/members';
 import { fromRow, MemberFormPage, photoPath, type AdminMember, type MemberFormValues, type SaveStage } from '../MembersDashboardClient';
 
 const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
@@ -13,10 +13,12 @@ export default function MemberFormRouteClient({
   initialMember,
   designationOptions,
   categoryOptions,
+  chapterOptions,
 }: {
   initialMember: MemberRow | null;
   designationOptions: string[];
   categoryOptions: string[];
+  chapterOptions: ChapterOption[];
 }) {
   const router = useRouter();
   const [saveStage, setSaveStage] = useState<SaveStage>(null);
@@ -81,6 +83,7 @@ export default function MemberFormRouteClient({
         company: values.company,
         designation: values.designation,
         category: values.category,
+        chapter_id: values.chapter_id,
         bio: values.bio,
         image_url: imageUrl,
         website: values.website,
@@ -126,6 +129,7 @@ export default function MemberFormRouteClient({
       member={member}
       designationOptions={designationOptions}
       categoryOptions={categoryOptions}
+      chapterOptions={chapterOptions}
       onClose={() => router.push('/admin/dashboard')}
       onSave={saveMember}
       isSaving={isSaving}

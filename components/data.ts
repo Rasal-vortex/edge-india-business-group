@@ -5,6 +5,7 @@ export interface Member {
   role: string;
   badge: string;
   categories: string[];
+  chapterId?: string | null;
   company?: string;
   image: string;
   description: string;

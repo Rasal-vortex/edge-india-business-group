@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import MemberFormRouteClient from '../MemberFormRouteClient';
 import { createClient } from '@/lib/supabase/server';
+import type { ChapterOption } from '@/lib/members';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,10 +18,13 @@ export default async function AdminNewMemberPage() {
     .maybeSingle();
   if (adminError || !admin) redirect('/admin');
 
-  const { data } = await supabase.from('members').select('designation,category');
+  const [{ data }, { data: chapters }] = await Promise.all([
+    supabase.from('members').select('designation,category'),
+    supabase.from('chapters').select('id,name,is_active').eq('is_active', true).order('name'),
+  ]);
   const rows = data ?? [];
   const designationOptions = [...new Set(rows.map((row) => row.designation).filter((value): value is string => Boolean(value)))].sort();
   const categoryOptions = [...new Set(rows.map((row) => row.category).filter((value): value is string => Boolean(value)))].sort();
 
-  return <MemberFormRouteClient initialMember={null} designationOptions={designationOptions} categoryOptions={categoryOptions} />;
+  return <MemberFormRouteClient initialMember={null} designationOptions={designationOptions} categoryOptions={categoryOptions} chapterOptions={(chapters ?? []) as ChapterOption[]} />;
 }

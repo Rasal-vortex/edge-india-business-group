@@ -4,6 +4,7 @@ import { ArrowLeft, ExternalLink, Pencil } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { createClient } from '@/lib/supabase/server';
 import { slugifyMemberName, type MemberRow } from '@/lib/members';
+import VisitingCardModal from '@/components/members/VisitingCardModal';
 
 function Detail({ label, value }: { label: string; value?: string | null }) {
   return (
@@ -54,10 +55,21 @@ export default async function AdminMemberDetailsPage({ params }: { params: Promi
           <Link href="/admin/dashboard" className="inline-flex min-h-10 items-center gap-2 rounded border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-[#12358f] hover:bg-[#f8f9ff]">
             <ArrowLeft aria-hidden="true" className="h-4 w-4" /> Back to members
           </Link>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Link href={profileHref} target="_blank" className="inline-flex min-h-10 items-center gap-2 rounded border border-[#12358f] bg-white px-4 py-2 text-sm font-bold text-[#12358f] hover:bg-[#eff4ff]">
               <ExternalLink aria-hidden="true" className="h-4 w-4" /> Public profile
             </Link>
+            <VisitingCardModal
+              member={{
+                username,
+                name: member.name,
+                designation: member.designation || 'Member',
+                phone: member.phone,
+                email: member.email,
+                personalInstagram: member.personal_instagram_url,
+                image: member.image_url,
+              }}
+            />
             <Link href={`/admin/dashboard/members/${member.id}/edit`} className="inline-flex min-h-10 items-center gap-2 rounded bg-[#12358f] px-4 py-2 text-sm font-bold text-white hover:bg-[#002069]">
               <Pencil aria-hidden="true" className="h-4 w-4" /> Edit member
             </Link>
@@ -79,7 +91,6 @@ export default async function AdminMemberDetailsPage({ params }: { params: Promi
               <dl className="grid gap-3 sm:grid-cols-2">
                 <Detail label="Owner name" value={member.name} />
                 <Detail label="Username" value={username} />
-                <Detail label="Profile link" value={profileHref} />
                 <Detail label="Company name" value={member.company} />
                 <div className="rounded-lg border border-slate-200 bg-[#f8f9ff] p-4 sm:col-span-2">
                   <dt className="text-[11px] font-bold uppercase tracking-wide text-slate-500">Company logo</dt>

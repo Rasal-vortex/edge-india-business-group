@@ -8,7 +8,7 @@ import type { Member } from './data';
 import MemberCard from '@/components/members/MemberCard';
 import CommunityMemberCard from '@/components/members/CommunityMemberCard';
 import { createClient } from '@/lib/supabase/client';
-import { sortPublicMembersByPriorityAndPin, toPublicMember, type MemberRow } from '@/lib/members';
+import { sortPublicMembersByPriorityAndPin, toPublicMember, type ChapterOption, type MemberRow } from '@/lib/members';
 import LiquidLoader from '@/components/ui/LiquidLoader';
 
 type MemberFilter = 'all' | string;
@@ -21,8 +21,21 @@ interface MembersProps {
 }
 
 export default function Members({ members: initialMembers, directory = false, variant = 'core', onSelectMember }: MembersProps) {
-  const [members, setMembers] = useState<Member[]>(initialMembers ?? []);
-  const [memberCount, setMemberCount] = useState(initialMembers?.length ?? 0);
+  const isCoreSection = !directory && variant === 'core';
+  const limitHomeCommunity = !directory && variant === 'community';
+  const sortedInitialMembers = useMemo(
+    () => initialMembers
+      ? sortPublicMembersByPriorityAndPin(initialMembers.filter((member) =>
+          Boolean(member.isInsideCoreMember) === isCoreSection,
+        ))
+      : [],
+    [initialMembers, isCoreSection],
+  );
+  const [members, setMembers] = useState<Member[]>(() =>
+    limitHomeCommunity ? sortedInitialMembers.slice(0, 8) : sortedInitialMembers,
+  );
+  const [chapters, setChapters] = useState<ChapterOption[]>([]);
+  const [memberCount, setMemberCount] = useState(sortedInitialMembers.length);
   const [loading, setLoading] = useState(initialMembers === undefined);
   const [loadError, setLoadError] = useState('');
   const [activeFilter, setActiveFilter] = useState<MemberFilter>('all');
@@ -30,20 +43,9 @@ export default function Members({ members: initialMembers, directory = false, va
   const [pauseCarousel, setPauseCarousel] = useState(false);
   const reduceMotion = useReducedMotion();
   const normalizedQuery = searchQuery.trim().toLocaleLowerCase();
-  const isCoreSection = !directory && variant === 'core';
-  const limitHomeCommunity = !directory && variant === 'community';
 
   useEffect(() => {
-    if (initialMembers !== undefined) {
-      const sectionMembers = initialMembers.filter((member) =>
-        Boolean(member.isInsideCoreMember) === isCoreSection,
-      );
-      const sortedMembers = sortPublicMembersByPriorityAndPin(sectionMembers);
-      setMemberCount(sortedMembers.length);
-      setMembers(limitHomeCommunity ? sortedMembers.slice(0, 8) : sortedMembers);
-      setLoading(false);
-      return;
-    }
+    if (initialMembers !== undefined) return;
 
     let cancelled = false;
     const loadMembers = async () => {
@@ -52,26 +54,46 @@ export default function Members({ members: initialMembers, directory = false, va
       try {
         const supabase = createClient();
         const priorities = ['high', 'medium', 'low'] as const;
-        const results = await Promise.all(priorities.map(async (priority) => {
-          const query = supabase
+        const memberResultsPromise = Promise.all(priorities.map(async (priority) => {
+          let query = supabase
             .from('members')
             .select('*', { count: 'exact' })
             .eq('is_active', true)
             .eq('is_inside_core_member', isCoreSection)
-            .eq('priority', priority)
+            .eq('priority', priority);
+
+          if (directory && activeFilter !== 'all') {
+            query = query.eq('chapter_id', activeFilter);
+          }
+
+          const orderedQuery = query
             .order('is_pinned', { ascending: false })
             .order('created_at', { ascending: false })
             .order('id', { ascending: true });
 
-          return limitHomeCommunity ? query.limit(8) : query;
+          return limitHomeCommunity ? orderedQuery.limit(8) : orderedQuery;
         }));
+
+        const chaptersPromise = directory
+          ? supabase
+              .from('chapters')
+              .select('id,name,is_active')
+              .eq('is_active', true)
+              .order('name', { ascending: true })
+          : Promise.resolve(null);
+        const [results, chapterResult] = await Promise.all([
+          memberResultsPromise,
+          chaptersPromise,
+        ]);
 
         const failedResult = results.find(({ error }) => error);
         if (failedResult?.error) throw failedResult.error;
+        if (chapterResult?.error) throw chapterResult.error;
 
         const totalCount = results.reduce((total, result) => total + (result.count ?? 0), 0);
         const rows = results.flatMap((result) => (result.data ?? []) as MemberRow[]);
         if (!cancelled) {
+          if (chapterResult) setChapters((chapterResult.data ?? []) as ChapterOption[]);
           setMemberCount(totalCount);
           setMembers(rows.map(toPublicMember));
         }
@@ -84,23 +106,21 @@ export default function Members({ members: initialMembers, directory = false, va
 
     void loadMembers();
     return () => { cancelled = true; };
-  }, [directory, initialMembers, isCoreSection, limitHomeCommunity]);
+  }, [activeFilter, directory, initialMembers, isCoreSection, limitHomeCommunity]);
 
   const sectionMembers = useMemo(() => {
-    return members;
-  }, [members]);
-
-  const categoryFilters = useMemo(() => Array.from(new Set(sectionMembers.flatMap((member) => member.categories)))
-    .filter(Boolean)
-    .map((category) => ({ id: category, label: category })), [sectionMembers]);
+    if (initialMembers === undefined) return members;
+    return directory && activeFilter !== 'all'
+      ? sortedInitialMembers.filter((member) => member.chapterId === activeFilter)
+      : sortedInitialMembers;
+  }, [activeFilter, directory, initialMembers, members, sortedInitialMembers]);
 
   const filteredMembers = useMemo(() => sectionMembers.filter((member) => {
-    const matchesCategory = activeFilter === 'all' || member.categories.includes(activeFilter);
     const matchesSearch = !normalizedQuery ||
       member.name.toLocaleLowerCase().includes(normalizedQuery) ||
       (member.company ?? '').toLocaleLowerCase().includes(normalizedQuery);
-    return matchesCategory && matchesSearch;
-  }), [activeFilter, sectionMembers, normalizedQuery]);
+    return matchesSearch;
+  }), [sectionMembers, normalizedQuery]);
 
   const displayedMembers = directory ? filteredMembers : variant === 'community' ? filteredMembers.slice(0, 8) : filteredMembers;
 
@@ -161,9 +181,9 @@ export default function Members({ members: initialMembers, directory = false, va
             ) : null}
           </div>
 
-          <div className="-mx-1 w-full overflow-x-auto px-1 pb-1" role="group" aria-label="Filter members by category">
+          <div className="-mx-1 w-full overflow-x-auto px-1 pb-1" role="group" aria-label="Filter members by chapter">
             <div className="mx-auto flex w-max min-w-full items-center justify-center gap-2">
-              {[{ id: 'all', label: 'All Members' }, ...categoryFilters].map((tab) => {
+              {[{ id: 'all', label: 'All Members' }, ...chapters.map((chapter) => ({ id: chapter.id, label: chapter.name }))].map((tab) => {
                 const isActive = activeFilter === tab.id;
                 return (
                   <button
@@ -193,7 +213,7 @@ export default function Members({ members: initialMembers, directory = false, va
           <div className="rounded-xl border border-rose-200 bg-rose-50 py-12 text-center" role="alert">
             <p className="text-sm font-semibold text-rose-800">{loadError}</p>
           </div>
-        ) : sectionMembers.length === 0 ? (
+        ) : sectionMembers.length === 0 && !(directory && activeFilter !== 'all') ? (
           <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 py-16 text-center">
             <Users aria-hidden="true" className="mx-auto mb-2 h-8 w-8 text-slate-400" />
             <p className="text-sm font-semibold text-slate-700">Member profiles are being added.</p>
@@ -203,7 +223,7 @@ export default function Members({ members: initialMembers, directory = false, va
           <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 py-16 text-center">
             <Users aria-hidden="true" className="mx-auto mb-2 h-8 w-8 text-slate-400" />
             <p className="text-base font-bold text-slate-800">No members found</p>
-            <p className="mt-1 text-sm text-slate-500">Try another name or company.</p>
+            <p className="mt-1 text-sm text-slate-500">Try another name, company, or chapter.</p>
             <button
               type="button"
               onClick={() => {

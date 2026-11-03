@@ -151,7 +151,9 @@ export default function GalleryDashboardClient({ initialItems, initialLoadError,
     setDeletingChapterId(chapter.id);
     const { error: deleteError } = await createClient().from('chapters').delete().eq('id', chapter.id);
     if (deleteError) {
-      showToast(`Could not delete chapter: ${deleteError.message}`);
+      showToast(deleteError.code === '23503'
+        ? 'Reassign this chapter’s members and gallery items, or deactivate the chapter before deleting it.'
+        : `Could not delete chapter: ${deleteError.message}`);
     } else {
       setChapters((current) => current.filter((entry) => entry.id !== chapter.id));
       setChapterNames((current) => { const next = { ...current }; delete next[chapter.id]; return next; });
@@ -401,11 +403,11 @@ export default function GalleryDashboardClient({ initialItems, initialLoadError,
           {initialLoadError ? <div role="alert" className="mb-6 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3.5 text-xs leading-5 text-rose-800">Could not load gallery items: {initialLoadError}</div> : null}
           {chaptersLoadError ? <div role="alert" className="mb-6 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3.5 text-xs leading-5 text-rose-800">Could not load chapters: {chaptersLoadError}</div> : null}
 
-          <section className="mb-6 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-            <div className="border-b border-slate-100 px-4 py-4 sm:px-5"><h2 className="text-sm font-extrabold text-[#002069]">Chapter management</h2><p className="mt-1 text-xs text-slate-500">Add and manage locations used to organize activities. Deactivating keeps gallery items; chapters with assigned items must be reassigned or emptied before deletion.</p></div>
+          <section id="chapter-management" className="mb-6 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+            <div className="border-b border-slate-100 px-4 py-4 sm:px-5"><h2 className="text-sm font-extrabold text-[#002069]">Chapter management</h2><p className="mt-1 text-xs text-slate-500">Add and manage chapter place names used by members and activities. Deactivating a chapter hides it from public filters and new member assignments. Reassign its members and gallery items before deleting it.</p></div>
             <div className="flex flex-col gap-2 border-b border-slate-100 p-4 sm:flex-row sm:items-center sm:p-5">
-              <label className="sr-only" htmlFor="new-chapter-name">New chapter name</label>
-              <input id="new-chapter-name" className={`${inputClass} sm:max-w-sm`} value={chapterName} onChange={(event) => setChapterName(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') { event.preventDefault(); void saveChapter(); } }} placeholder="New chapter name" />
+              <label className="sr-only" htmlFor="new-chapter-name">New chapter place name</label>
+              <input id="new-chapter-name" className={`${inputClass} sm:max-w-sm`} value={chapterName} onChange={(event) => setChapterName(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') { event.preventDefault(); void saveChapter(); } }} placeholder="New chapter place name" />
               <button type="button" onClick={() => void saveChapter()} disabled={savingChapter} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md bg-[#12358f] px-4 text-xs font-bold text-white hover:bg-[#002069] disabled:opacity-50">{savingChapter ? <LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin" /> : <Plus aria-hidden="true" className="h-4 w-4" />}Add chapter</button>
             </div>
             {chapters.length ? <ul className="divide-y divide-slate-100">

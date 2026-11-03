@@ -22,6 +22,7 @@ import { createClient } from "@/lib/supabase/client";
 import {
   slugifyMemberName,
   sortMembersByPriorityAndPin,
+  type ChapterOption,
   type MemberRow,
 } from "@/lib/members";
 import RouteTransitionLoader from "@/components/ui/RouteTransitionLoader";
@@ -42,6 +43,7 @@ export interface AdminMember {
   company: string;
   designation: string | null;
   category: string | null;
+  chapter_id: string | null;
   bio: string | null;
   image: string | null;
   website: string | null;
@@ -71,6 +73,7 @@ export const fromRow = (row: MemberRow): AdminMember => ({
   company: row.company,
   designation: row.designation,
   category: row.category,
+  chapter_id: row.chapter_id,
   bio: row.bio,
   image: row.image_url,
   website: row.website,
@@ -106,6 +109,7 @@ export function MemberFormPage({
   member,
   designationOptions,
   categoryOptions,
+  chapterOptions,
   onClose,
   onSave,
   isSaving,
@@ -115,6 +119,7 @@ export function MemberFormPage({
   member: AdminMember | null;
   designationOptions: string[];
   categoryOptions: string[];
+  chapterOptions: ChapterOption[];
   onClose: () => void;
   onSave: (
     values: MemberFormValues,
@@ -238,6 +243,7 @@ export function MemberFormPage({
           company,
           designation: optionalValue(data.get("designation")),
           category: optionalValue(data.get("category")),
+          chapter_id: optionalValue(data.get("chapter_id")),
           bio: optionalValue(data.get("bio")),
           image,
           website: optionalValue(data.get("website")),
@@ -535,6 +541,41 @@ export function MemberFormPage({
                       <option key={category} value={category} />
                     ))}
                   </datalist>
+                </div>
+                <div>
+                  <label className={labelClass} htmlFor="member-chapter">
+                    Chapter
+                  </label>
+                  <select
+                    id="member-chapter"
+                    name="chapter_id"
+                    defaultValue={member?.chapter_id ?? ""}
+                    className={inputClass}
+                  >
+                    <option value="">Not assigned to a chapter</option>
+                    {chapterOptions.map((chapter) => (
+                      <option
+                        key={chapter.id}
+                        value={chapter.id}
+                        disabled={
+                          !chapter.is_active && member?.chapter_id !== chapter.id
+                        }
+                      >
+                        {chapter.name}
+                        {chapter.is_active ? "" : " (Inactive)"}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="mt-1 text-[10px] text-slate-500">
+                    Manage chapter place names on the{" "}
+                    <Link
+                      href="/admin/dashboard/gallery#chapter-management"
+                      className="font-semibold text-[#12358f] underline underline-offset-2 hover:text-[#002069]"
+                    >
+                      Manage Chapter
+                    </Link>
+                    .
+                  </p>
                 </div>
                 <div className="sm:col-span-2">
                   <label className={labelClass} htmlFor="member-bio">

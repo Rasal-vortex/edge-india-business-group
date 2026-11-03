@@ -7,6 +7,7 @@ export interface MemberRow {
   company: string;
   designation: string | null;
   category: string | null;
+  chapter_id: string | null;
   bio: string | null;
   image_url: string | null;
   website: string | null;
@@ -25,6 +26,12 @@ export interface MemberRow {
   is_inside_core_member: boolean;
   created_at: string;
   updated_at: string;
+}
+
+export interface ChapterOption {
+  id: string;
+  name: string;
+  is_active: boolean;
 }
 
 type MemberOrderFields = {
@@ -69,6 +76,7 @@ export function toPublicMember(row: MemberRow): Member {
     role: row.designation || 'Member',
     badge: category || 'MEMBER',
     categories: category ? [category] : [],
+    chapterId: row.chapter_id,
     company: row.company,
     image: row.image_url || '',
     description: row.bio || '',
