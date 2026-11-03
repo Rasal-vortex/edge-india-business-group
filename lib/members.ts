@@ -36,6 +36,7 @@ export interface ChapterOption {
 
 type MemberOrderFields = {
   id: string;
+  active?: boolean;
   priority?: 'high' | 'medium' | 'low';
   pinned: boolean;
   createdAt?: string;
@@ -43,7 +44,8 @@ type MemberOrderFields = {
 
 function compareMemberOrder(a: MemberOrderFields, b: MemberOrderFields) {
   const priorityRank = { high: 0, medium: 1, low: 2 } as const;
-  return priorityRank[a.priority ?? 'medium'] - priorityRank[b.priority ?? 'medium'] ||
+  return Number(b.active ?? true) - Number(a.active ?? true) ||
+    priorityRank[a.priority ?? 'medium'] - priorityRank[b.priority ?? 'medium'] ||
     Number(b.pinned) - Number(a.pinned) ||
     (Date.parse(b.createdAt ?? '') || 0) - (Date.parse(a.createdAt ?? '') || 0) ||
     a.id.localeCompare(b.id);
@@ -95,19 +97,21 @@ export function toPublicMember(row: MemberRow): Member {
     mapUrl: row.map_url,
     priority: row.priority,
     level: row.level,
+    isActive: row.is_active,
     isPinned: row.is_pinned,
     isInsideCoreMember: row.is_inside_core_member,
     createdAt: row.created_at,
   };
 }
 
-export function sortPublicMembersByPriorityAndPin<T extends Pick<Member, 'id' | 'priority' | 'isPinned' | 'createdAt'>>(members: T[]) {
+export function sortPublicMembersByPriorityAndPin<T extends Pick<Member, 'id' | 'priority' | 'isPinned' | 'createdAt'> & Partial<Pick<Member, 'isActive'>>>(members: T[]) {
   return [...members].sort((a, b) => compareMemberOrder(
-    { id: a.id, priority: a.priority, pinned: Boolean(a.isPinned), createdAt: a.createdAt },
-    { id: b.id, priority: b.priority, pinned: Boolean(b.isPinned), createdAt: b.createdAt },
+    { id: a.id, active: a.isActive ?? true, priority: a.priority, pinned: Boolean(a.isPinned), createdAt: a.createdAt },
+    { id: b.id, active: b.isActive ?? true, priority: b.priority, pinned: Boolean(b.isPinned), createdAt: b.createdAt },
   ));
 }
 
 export function isMemberPhotoUrl(imageUrl: string | null | undefined) {
   return Boolean(imageUrl?.includes('/storage/v1/object/public/member-photos/'));
 }
+
