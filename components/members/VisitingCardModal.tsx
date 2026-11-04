@@ -297,7 +297,7 @@ export default function VisitingCardModal({
                             <h3 className="line-clamp-2 break-words text-[4.1cqi] font-extrabold leading-[1.06] tracking-tight">
                               {member.name}
                             </h3>
-                            <p className="mt-[1.2%] truncate text-[2.9cqi] font-medium text-slate-600">
+                            <p className="mt-[1.2%] line-clamp-2 break-words text-[2.9cqi] font-medium text-slate-600">
                               {member.designation || "Member"}
                             </p>
                             <div className="mt-[2%] h-[3px] w-[15%] rounded-full bg-[#e51b2b]" />
