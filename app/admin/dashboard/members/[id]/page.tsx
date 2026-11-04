@@ -68,6 +68,8 @@ export default async function AdminMemberDetailsPage({ params }: { params: Promi
                 email: member.email,
                 personalInstagram: member.personal_instagram_url,
                 image: member.image_url,
+                company: member.company,
+                companyLogo: member.company_logo_url,
               }}
             />
             <Link href={`/admin/dashboard/members/${member.id}/edit`} className="inline-flex min-h-10 items-center gap-2 rounded bg-[#12358f] px-4 py-2 text-sm font-bold text-white hover:bg-[#002069]">

@@ -19,6 +19,8 @@ export interface VisitingCardMember {
   email?: string | null;
   personalInstagram?: string | null;
   image?: string | null;
+  company?: string | null;
+  companyLogo?: string | null;
 }
 
 function instagramHref(value: string) {
@@ -222,13 +224,13 @@ export default function VisitingCardModal({
             <div className="flex items-center justify-between gap-4 border-b border-slate-200 px-4 py-3 sm:px-5">
               <div>
                 <p className="text-[9px] font-extrabold uppercase tracking-[0.18em] text-[#c8102e]">
-                  Member card
+                  Member
                 </p>
                 <h2
                   id="visiting-card-title"
                   className="mt-0.5 text-lg font-extrabold tracking-tight text-[#08245d]"
                 >
-                  Visiting card
+                  Membership Card
                 </h2>
               </div>
               <button
@@ -292,7 +294,7 @@ export default function VisitingCardModal({
                             )}
                           </div>
                           <div className="min-w-0 flex-1">
-                            <h3 className="truncate text-[4.4cqi] font-extrabold leading-[1.06] tracking-tight">
+                            <h3 className="line-clamp-2 break-words text-[4.1cqi] font-extrabold leading-[1.06] tracking-tight">
                               {member.name}
                             </h3>
                             <p className="mt-[1.2%] truncate text-[2.9cqi] font-medium text-slate-600">
@@ -369,39 +371,44 @@ export default function VisitingCardModal({
                             {qrError ? "QR unavailable" : "Creating QR code…"}
                           </div>
                         )}
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src="/compony-logos/vortex-logo-vertical.png"
-                          alt="Vortex Global Technologies"
-                          className="max-h-[25%] w-[76%] object-contain"
-                        />
+                        {member.companyLogo ? (
+                          /* eslint-disable-next-line @next/next/no-img-element */
+                          <img
+                            src={member.companyLogo}
+                            alt={`${member.company || "Company"} logo`}
+                            className="max-h-[25%] max-w-[76%] object-contain"
+                          />
+                        ) : null}
                       </div>
                     </main>
 
-                    <footer className="relative grid h-[22%] shrink-0 grid-cols-[7fr_3fr] items-center before:absolute before:inset-x-[1%] before:top-0 before:h-px before:bg-gradient-to-r before:from-[#12358f] before:via-[#7751bb] before:to-[#e51b2b]">
-                      <div className="flex h-full min-w-0 flex-col items-center justify-center">
-                        <span className="flex h-[22%] items-center text-[2cqi] font-semibold italic text-[#102b61]">
+                    <footer className="relative grid h-[22%] shrink-0 grid-cols-[7fr_3fr] before:absolute before:inset-x-[1%] before:top-0 before:h-px before:bg-gradient-to-r before:from-[#12358f] before:via-[#7751bb] before:to-[#e51b2b]">
+                      {/* EDGE INDIA */}
+                      <div className="flex h-full min-w-0 flex-col items-center justify-center gap-[3%]">
+                        <span className="text-center text-[2cqi] font-semibold italic leading-none text-[#102b61]">
                           A proud member of
                         </span>
+
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src="/compony-logos/edege-india-logo-png-file.png"
                           alt="EDGE INDIA"
-                          className="h-[68%] max-w-[63%] object-contain"
+                          className="h-[42%] max-h-full max-w-[74%] object-contain"
                         />
                       </div>
-                      <div className="relative flex h-full min-w-0 flex-col items-center justify-center before:absolute before:bottom-[20%] before:left-0 before:top-[20%] before:w-px before:bg-[#d3dced]">
-                        <span className="flex h-[28%] items-center text-[2cqi] font-semibold italic text-[#102b61]">
+
+                      {/* VORTEX TECHNOLOGY PARTNER */}
+                      <div className="relative flex h-full min-w-0 flex-col items-center justify-center gap-[3%] before:absolute before:bottom-[20%] before:left-0 before:top-[20%] before:w-px before:bg-[#d3dced]">
+                        <span className="text-center text-[2cqi] font-semibold italic leading-none text-[#102b61]">
                           Technology Partner
                         </span>
-                        <div className="relative aspect-[4.2/1] w-[78%] overflow-hidden">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src="/compony-logos/vortex-global-technologies-wide.png"
-                            alt="Vortex Global Technologies"
-                            className="absolute left-0 top-1/2 w-full max-w-none -translate-y-1/2"
-                          />
-                        </div>
+
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src="/compony-logos/vortex-global-technologies-wide.png"
+                          alt="Vortex Global Technologies"
+                          className="h-[38%] max-h-full max-w-[78%] object-contain"
+                        />
                       </div>
                     </footer>
                   </div>

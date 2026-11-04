@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { ArrowLeft, Building2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { slugifyMemberName, type MemberRow } from "@/lib/members";
@@ -47,6 +47,10 @@ export default async function MemberProfilePage({
   if (!member) notFound();
 
   const category = member.category?.trim();
+  const designation = member.designation?.trim() || "Designation not provided";
+  const designationWithCompany = member.company?.trim()
+    ? `${designation} of ${member.company.trim()}`
+    : designation;
 
   return (
     <main className="min-h-screen bg-[#f8f9ff] text-[#0b1c30]">
@@ -64,18 +68,12 @@ export default async function MemberProfilePage({
               aria-labelledby="member-photo-label"
               className="flex flex-col items-center justify-center bg-[#eff4ff] p-6 sm:p-8"
             >
-              <h2
-                id="member-photo-label"
-                className="mb-4 text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#002069]"
-              >
-                Recent photo
-              </h2>
               <div className="flex aspect-square w-full max-w-[280px] items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
                 {member.image_url ? (
                   /* eslint-disable-next-line @next/next/no-img-element */
                   <img
                     src={member.image_url}
-                    alt={`Recent photo of ${member.name}`}
+                    alt={`${member.name}`}
                     className="h-full w-full object-cover"
                   />
                 ) : (
@@ -93,18 +91,29 @@ export default async function MemberProfilePage({
 
             <div className="flex flex-col justify-center gap-8 p-6 sm:p-8 lg:p-10">
               <section aria-labelledby="member-name">
-                <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#12358f]">
-                  Member
-                </p>
-                <h1
-                  id="member-name"
-                  className="mt-2 break-words text-3xl font-extrabold tracking-tight text-[#002069] sm:text-4xl"
-                >
-                  {member.name}
-                </h1>
-                <p className="mt-3 text-lg font-semibold text-slate-600">
-                  {member.designation || "Designation not provided"}
-                </p>
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <h1
+                      id="member-name"
+                      className="mt-2 break-words text-3xl font-extrabold tracking-tight text-[#002069] sm:text-4xl"
+                    >
+                      {member.name}
+                    </h1>
+                    <p className="mt-3 text-lg font-semibold text-slate-600">
+                      {designationWithCompany}
+                    </p>
+                  </div>
+                  {member.company_logo_url ? (
+                    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white p-2 shadow-sm sm:h-20 sm:w-20">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={member.company_logo_url}
+                        alt={`${member.company || "Company"} logo`}
+                        className="h-full w-full object-contain"
+                      />
+                    </div>
+                  ) : null}
+                </div>
                 <div className="mt-5">
                   <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-slate-500">
                     Category
@@ -115,39 +124,32 @@ export default async function MemberProfilePage({
                 </div>
               </section>
 
-              <section
-                aria-labelledby="member-company"
-                className="border-t border-slate-200 pt-6"
-              >
-                <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-[#12358f]">
-                  Company logo &amp; name
-                </p>
-                <div className="mt-4 flex min-w-0 items-center gap-4">
-                  <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-white p-2">
-                    {member.company_logo_url ? (
-                      /* eslint-disable-next-line @next/next/no-img-element */
-                      <img
-                        src={member.company_logo_url}
-                        alt={`${member.company || "Company"} logo`}
-                        className="h-full w-full object-contain"
-                      />
-                    ) : (
-                      <Building2
-                        aria-hidden="true"
-                        className="h-8 w-8 text-[#12358f]"
-                      />
-                    )}
-                  </div>
-                  <h2
-                    id="member-company"
-                    className="min-w-0 break-words text-xl font-extrabold text-[#002069] sm:text-2xl"
-                  >
-                    {member.company || "Company name not provided"}
-                  </h2>
-                </div>
-              </section>
             </div>
           </div>
+          <footer className="grid grid-cols-[7fr_3fr] border-t border-slate-200 bg-white px-4 py-4 sm:px-8">
+            <div className="flex min-w-0 flex-col items-center justify-center gap-1">
+              <span className="text-center text-xs font-semibold italic text-[#102b61]">
+                A proud member of
+              </span>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/compony-logos/edege-india-logo-png-file.png"
+                alt="EDGE INDIA"
+                className="h-16 max-w-[92%] object-contain sm:h-20"
+              />
+            </div>
+            <div className="flex min-w-0 flex-col items-center justify-center gap-1 border-l border-slate-200">
+              <span className="text-center text-xs font-semibold italic text-[#102b61]">
+                Technology Partner
+              </span>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/compony-logos/vortex-global-technologies-wide.png"
+                alt="Vortex Global Technologies"
+                className="h-10 max-w-[86%] object-contain sm:h-12"
+              />
+            </div>
+          </footer>
         </article>
       </div>
     </main>

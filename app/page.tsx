@@ -5,7 +5,8 @@ import ChatbotWidget from '@/components/ChatbotWidget';
 import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import About from '@/components/About';
-import Members from '@/components/Members';
+import CommunityMembersSection from '@/components/CommunityMembersSection';
+import CoreTeamSection from '@/components/CoreTeamSection';
 import Gallery from '@/components/Gallery';
 import VortexPartnerSection from '@/components/VortexPartnerSection';
 import CTA from '@/components/CTA';
@@ -113,14 +114,9 @@ export default function HomePage() {
         <About />
 
         {/* 3. Community / Members Section */}
-        <Members
-          onSelectMember={handleMemberSelect}
-        />
+        <CoreTeamSection onSelectMember={handleMemberSelect} />
 
-        <Members
-          variant="community"
-          onSelectMember={handleMemberSelect}
-        />
+        <CommunityMembersSection onSelectMember={handleMemberSelect} />
 
         {/* 4. Moments / Gallery Section */}
         <Gallery />

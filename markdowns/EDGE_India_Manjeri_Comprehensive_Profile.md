@@ -28,4 +28,4 @@ Operating under the regional motto **"Together, We Grow"**, the Manjeri Chapter 
 
 - **Leadership / Presence:** Headed locally by figures including President Muhammed Shafeed
 - **Primary Hotlines:** +91 99954 30724 / +91 75949 44211
-- **Official Hub:** Updates can be tracked through their active community portal on Instagram (@edg.eindia)
+- **Official Hub:** Updates can be tracked through their active community portal on Instagram (edg.eindia)
