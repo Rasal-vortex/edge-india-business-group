@@ -65,7 +65,7 @@ export default function Gallery() {
       }
       let query = createClient().from('gallery_items').select('id,image_url,instagram_url,alt_text,display_order,created_at').eq('is_published', true);
       if (chapter) query = query.eq('chapter_id', chapter.id);
-      const { data, error } = await query.order('display_order', { ascending: true }).order('created_at', { ascending: true }).order('id', { ascending: true }).limit(4);
+      const { data, error } = await query.order('created_at', { ascending: false }).order('id', { ascending: true }).limit(4);
       if (!active) return;
       if (error) setLoadError(error.message);
       else setItems((data ?? []) as ActivityGalleryItem[]);

@@ -20,8 +20,7 @@ export default async function AdminGalleryPage() {
   const { data, error } = await supabase
     .from('gallery_items')
     .select('*')
-    .order('display_order', { ascending: true })
-    .order('created_at', { ascending: true })
+    .order('created_at', { ascending: false })
     .order('id', { ascending: true });
   const { data: chapters, error: chaptersError } = await supabase
     .from('chapters')

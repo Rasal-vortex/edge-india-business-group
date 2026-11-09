@@ -320,7 +320,7 @@ export default function GalleryDashboardClient({ initialItems, initialLoadError,
         const { error: insertError } = await supabase.from('gallery_items').insert(rows);
         if (insertError) throw insertError;
       }
-      const { data, error: reloadError } = await supabase.from('gallery_items').select('*').order('display_order').order('created_at');
+      const { data, error: reloadError } = await supabase.from('gallery_items').select('*').order('created_at', { ascending: false }).order('id', { ascending: true });
       if (!reloadError && data) setItems(data as GalleryRow[]);
       closeForm();
       showToast(existing.length ? 'Gallery item updated.' : `${additions.length} gallery ${additions.length === 1 ? 'item' : 'items'} saved.`);

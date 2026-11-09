@@ -63,8 +63,7 @@ export default async function ActivitiesPage({ searchParams }: { searchParams: S
     .eq('is_published', true);
   if (matchedChapter) query = query.eq('chapter_id', matchedChapter.id);
   const { data, error: itemsError, count } = await query
-    .order('display_order', { ascending: true })
-    .order('created_at', { ascending: true })
+    .order('created_at', { ascending: false })
     .order('id', { ascending: true })
     .range(from, from + PAGE_SIZE - 1);
 
